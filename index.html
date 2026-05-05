@@ -835,55 +835,66 @@ function buildGame(pg){
       wrap.appendChild(row);
     });
 
-    // Navigation buttons row
+    // Navigation buttons row — 3 buttons on one line
     const brow=div("");
-    brow.style.cssText="display:flex;gap:10px;margin-top:16px";
+    brow.style.cssText="display:flex;gap:8px;margin-top:16px;align-items:center";
 
-    // ← Previous round button (only if round > 1)
-    if(currentRound > 1){
-      const pb = document.createElement("button");
-      pb.style.cssText=`display:flex;align-items:center;justify-content:center;gap:6px;
-        border-radius:var(--rs);font-weight:700;font-size:14px;padding:14px 16px;border:1.5px solid var(--border);
-        cursor:pointer;background:var(--surface2);color:var(--text);font-family:Outfit,sans-serif;flex-shrink:0`;
-      pb.innerHTML="← M"+(currentRound-1);
-      pb.onclick=()=>upd(d=>({...d,current:{...d.current,round:d.current.round-1}}));
-      brow.appendChild(pb);
-    }
+    // ← Previous round
+    const pb = document.createElement("button");
+    pb.style.cssText=`flex:1;display:flex;align-items:center;justify-content:center;gap:4px;
+      border-radius:var(--rs);font-weight:700;font-size:13px;padding:13px 8px;
+      border:1.5px solid var(--border);cursor:pointer;
+      background:${currentRound>1?"var(--surface2)":"transparent"};
+      color:${currentRound>1?"var(--text)":"var(--dim)"};
+      font-family:Outfit,sans-serif;pointer-events:${currentRound>1?"auto":"none"}`;
+    pb.innerHTML="← M"+(currentRound-1 > 0 ? currentRound-1 : "");
+    pb.onclick=()=>upd(d=>({...d,current:{...d.current,round:d.current.round-1}}));
 
-    // → Next round button
+    // Current round — non clickable
+    const cb2 = document.createElement("button");
+    cb2.style.cssText=`flex:1.2;display:flex;align-items:center;justify-content:center;
+      border-radius:var(--rs);font-weight:800;font-size:15px;padding:13px 8px;
+      border:2px solid var(--accent);cursor:default;pointer-events:none;
+      background:${allScored?"var(--accent)":"var(--surface)"};
+      color:${allScored?"#fff":"var(--accent)"};
+      font-family:Outfit,sans-serif`;
+    cb2.textContent="M"+currentRound;
+
+    // → Next round
     const nb = document.createElement("button");
-    nb.style.cssText=`flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
-      border-radius:var(--rs);font-weight:700;font-size:15px;padding:14px 18px;border:none;cursor:pointer;
-      font-family:Outfit,sans-serif;transition:all .15s;
-      background:${allScored?"var(--accent)":"var(--surface2)"};
-      color:${allScored?"#fff":"var(--text)"};
-      box-shadow:${allScored?"0 4px 16px rgba(0,0,0,0.2)":"none"};
-      ${allScored?"":"border:1.5px solid var(--border);"}`;
-    nb.textContent = "Manche "+(currentRound+1)+" →";
+    nb.style.cssText=`flex:1;display:flex;align-items:center;justify-content:center;gap:4px;
+      border-radius:var(--rs);font-weight:700;font-size:13px;padding:13px 8px;
+      border:1.5px solid var(--border);cursor:pointer;
+      background:var(--surface2);color:var(--text);
+      font-family:Outfit,sans-serif`;
+    nb.innerHTML="M"+(currentRound+1)+" →";
     nb.onclick=()=>upd(d=>({...d,current:{...d.current,round:d.current.round+1}}));
-    brow.appendChild(nb);
 
-    // 🏁 End game
-    const eb=btn("btn btn-d","🏁",()=>{
+    brow.appendChild(pb); brow.appendChild(cb2); brow.appendChild(nb);
+    wrap.appendChild(brow);
+
+    // 🏁 End game — below
+    const erow=div("");
+    erow.style.cssText="margin-top:10px";
+    const eb=btn("btn btn-d btn-full","🏁 Terminer la partie",()=>{
       showModal((sheet,close)=>{
         const sorted=[...s.players].sort((a,b)=>b.total-a.total);
         sheet.appendChild(div("mtitle","🏁 Terminer la partie ?"));
         sheet.appendChild(div("",`<div style="color:var(--muted);font-size:14px;margin-bottom:18px;line-height:1.6">
           Le gagnant est <strong style="color:var(--accent)">${sorted[0]?.name}</strong> avec <strong>${sorted[0]?.total} pts</strong>.
         </div>`));
-        const cb=btn("btn btn-p btn-full","Confirmer 🎉",()=>{
+        const cfb=btn("btn btn-p btn-full","Confirmer 🎉",()=>{
           const finished={...s,finishedAt:Date.now()};
           upd(d=>({...d,current:null,sessions:[...d.sessions,finished]}));
           confetti();close();goTab("history");
         });
-        cb.style.marginBottom="8px";
+        cfb.style.marginBottom="8px";
         const kb=btn("btn btn-s btn-full","Continuer la partie",close);
-        sheet.appendChild(cb);sheet.appendChild(kb);
+        sheet.appendChild(cfb);sheet.appendChild(kb);
       });
     });
-    eb.style.cssText="flex-shrink:0;padding:14px 16px;border-radius:var(--rs);font-size:18px";
-    brow.appendChild(eb);
-    wrap.appendChild(brow);
+    erow.appendChild(eb);
+    wrap.appendChild(erow);
 
     // Info if nobody scored yet this round
     if(noneScored && currentRound > 1){
