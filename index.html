@@ -1862,9 +1862,7 @@ function showImport(){
           errDiv.textContent = "Format invalide.";
           return;
         }
-        if(confirm("Importer " + data.sessions.length + " partie(s), " + data.players.length + " joueur(s) et " + data.games.length + " jeu(x) ?
-
-Vos données actuelles seront remplacées.")){
+        if(confirm("Importer " + data.sessions.length + " partie(s), " + data.players.length + " joueur(s) et " + data.games.length + " jeu(x) ? Vos données actuelles seront remplacées.")){
           upd(d => ({
             ...d,
             games: data.games,
