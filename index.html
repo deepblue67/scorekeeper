@@ -365,7 +365,13 @@ function buildHome(pg){
     goTab("game");
   });
   sb.style.marginTop="8px";
-  sb.disabled=true;
+  if(D.current){
+    sb.disabled=true;
+    sb.style.opacity="0.4";
+    sb.textContent="⚠️ Terminez la partie en cours d'abord";
+  } else {
+    sb.disabled=true; // will be enabled by updateBtn
+  }
   wrap.appendChild(sb);
 
   // Game picker
@@ -429,6 +435,7 @@ function buildHome(pg){
   }
 
   function updateBtn(){
+    if(D.current)return; // already blocked above
     const gn=selGame||"";
     sb.disabled=!gn||!selPlayers.length;
   }
