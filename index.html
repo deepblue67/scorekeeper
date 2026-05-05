@@ -741,6 +741,31 @@ function buildHome(pg){
 
 // ── GAME PAGE ──────────────────────────────────────────────
 let gameTab="scores";
+
+function makeEndGameBtn(s){
+  const erow=div("");
+  erow.style.cssText="margin-top:10px";
+  const eb=btn("btn btn-d btn-full","🏁 Terminer la partie",()=>{
+    showModal((sheet,close)=>{
+      const sorted=[...s.players].sort((a,b)=>b.total-a.total);
+      sheet.appendChild(div("mtitle","🏁 Terminer la partie ?"));
+      sheet.appendChild(div("",`<div style="color:var(--muted);font-size:14px;margin-bottom:18px;line-height:1.6">
+        Le gagnant est <strong style="color:var(--accent)">${sorted[0]?.name}</strong> avec <strong>${sorted[0]?.total} pts</strong>.
+      </div>`));
+      const cfb=btn("btn btn-p btn-full","Confirmer 🎉",()=>{
+        const finished={...s,finishedAt:Date.now()};
+        upd(d=>({...d,current:null,sessions:[...d.sessions,finished]}));
+        confetti();close();goTab("history");
+      });
+      cfb.style.marginBottom="8px";
+      const kb=btn("btn btn-s btn-full","Continuer la partie",close);
+      sheet.appendChild(cfb);sheet.appendChild(kb);
+    });
+  });
+  erow.appendChild(eb);
+  return erow;
+}
+
 function buildGame(pg){
   pg.innerHTML="";
   if(!D.current){
@@ -858,7 +883,7 @@ function buildGame(pg){
       background:${allScored?"var(--accent)":"var(--surface)"};
       color:${allScored?"#fff":"var(--accent)"};
       font-family:Outfit,sans-serif`;
-    cb2.textContent="M"+currentRound;
+    cb2.textContent="Manche "+currentRound;
 
     // → Next round
     const nb = document.createElement("button");
@@ -876,25 +901,7 @@ function buildGame(pg){
     // 🏁 End game — below
     const erow=div("");
     erow.style.cssText="margin-top:10px";
-    const eb=btn("btn btn-d btn-full","🏁 Terminer la partie",()=>{
-      showModal((sheet,close)=>{
-        const sorted=[...s.players].sort((a,b)=>b.total-a.total);
-        sheet.appendChild(div("mtitle","🏁 Terminer la partie ?"));
-        sheet.appendChild(div("",`<div style="color:var(--muted);font-size:14px;margin-bottom:18px;line-height:1.6">
-          Le gagnant est <strong style="color:var(--accent)">${sorted[0]?.name}</strong> avec <strong>${sorted[0]?.total} pts</strong>.
-        </div>`));
-        const cfb=btn("btn btn-p btn-full","Confirmer 🎉",()=>{
-          const finished={...s,finishedAt:Date.now()};
-          upd(d=>({...d,current:null,sessions:[...d.sessions,finished]}));
-          confetti();close();goTab("history");
-        });
-        cfb.style.marginBottom="8px";
-        const kb=btn("btn btn-s btn-full","Continuer la partie",close);
-        sheet.appendChild(cfb);sheet.appendChild(kb);
-      });
-    });
-    erow.appendChild(eb);
-    wrap.appendChild(erow);
+    wrap.appendChild(makeEndGameBtn(s));
 
     // Info if nobody scored yet this round
     if(noneScored && currentRound > 1){
@@ -920,6 +927,7 @@ function buildGame(pg){
       cd.innerHTML=`<div class="ctitle">Écart</div><div style="font-size:13px;color:var(--muted)">${sorted[0].name} mène avec <strong style="color:var(--accent)">${sorted[0].total-sorted[1].total} pts</strong> d'avance sur ${sorted[1].name}</div>`;
       wrap.appendChild(cd);
     }
+    wrap.appendChild(makeEndGameBtn(s));
   }
 
   if(gameTab==="detail"){
@@ -963,6 +971,7 @@ function buildGame(pg){
     const ow=div("");ow.style.overflowX="auto";
     ow.appendChild(tbl);card.appendChild(ow);
     wrap.appendChild(card);
+    wrap.appendChild(makeEndGameBtn(s));
   }
 }
 
