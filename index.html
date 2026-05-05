@@ -790,14 +790,14 @@ function buildGame(pg){
     const progress = scoredThisRound.length + "/" + s.players.length;
     sb.innerHTML=`<div class="sdot"></div>
       <span style="font-size:13px;font-weight:600">Manche ${currentRound}</span>
-      <span style="margin-left:auto;font-size:12px;color:var(--muted)">${scoredThisRound.length === s.players.length ? "✅ Tous ont saisi" : progress + " ont saisi"}</span>`;
+      <span style="margin-left:auto;font-size:12px;color:var(--muted)">${allScored ? "✅ Tous ont saisi" : progress + " ont saisi"}</span>`;
     wrap.appendChild(sb);
 
     // Player rows
     s.players.forEach(p=>{
       const hasScored = !!p.scores.find(sc => sc.r === currentRound);
       const row=div("score-row");
-      row.style.opacity = hasScored ? "0.6" : "1";
+      row.style.opacity = hasScored ? "0.65" : "1";
       row.style.borderColor = hasScored ? "var(--accent)" : "transparent";
 
       const avEl = document.createElement("div");
@@ -811,16 +811,10 @@ function buildGame(pg){
       const nameSub = document.createElement("div");
       nameSub.style.cssText = "font-size:11px;color:var(--muted)";
       nameSub.textContent = "Total: " + p.total + " pts · " + (hasScored ? "✓ saisi" : "en attente");
-      nameEl.appendChild(nameTop);
-      nameEl.appendChild(nameSub);
+      nameEl.appendChild(nameTop); nameEl.appendChild(nameSub);
 
-      const statusEl = document.createElement("div"); // empty placeholder
-      statusEl.style.display = "none";
-
-      // Show current round score (or — if not yet entered)
       const roundEntry = p.scores ? p.scores.find(sc => sc.r === currentRound) : null;
       const roundVal = roundEntry ? roundEntry.v : undefined;
-
       const totalEl = document.createElement("div");
       totalEl.className = "sr-total";
       if(roundVal !== undefined){
@@ -835,38 +829,42 @@ function buildGame(pg){
       arrEl.className = "sr-arr";
       arrEl.textContent = hasScored ? "✏️" : "›";
 
-      row.appendChild(avEl);
-      row.appendChild(nameEl);
-      row.appendChild(statusEl);
-      row.appendChild(totalEl);
-      row.appendChild(arrEl);
-
-      // Always tappable: if already scored → edit, if not → add
+      row.appendChild(avEl); row.appendChild(nameEl);
+      row.appendChild(totalEl); row.appendChild(arrEl);
       row.onclick = () => showNumpad(p);
       wrap.appendChild(row);
     });
 
-    // Next round button — prominent when all scored, always available
+    // Navigation buttons row
     const brow=div("");
     brow.style.cssText="display:flex;gap:10px;margin-top:16px";
 
+    // ← Previous round button (only if round > 1)
+    if(currentRound > 1){
+      const pb = document.createElement("button");
+      pb.style.cssText=`display:flex;align-items:center;justify-content:center;gap:6px;
+        border-radius:var(--rs);font-weight:700;font-size:14px;padding:14px 16px;border:1.5px solid var(--border);
+        cursor:pointer;background:var(--surface2);color:var(--text);font-family:Outfit,sans-serif;flex-shrink:0`;
+      pb.innerHTML="← M"+(currentRound-1);
+      pb.onclick=()=>upd(d=>({...d,current:{...d.current,round:d.current.round-1}}));
+      brow.appendChild(pb);
+    }
+
+    // → Next round button
     const nb = document.createElement("button");
-    nb.style.cssText = `flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
-      border-radius:var(--rs);font-weight:700;font-size:15px;padding:15px 18px;border:none;cursor:pointer;
+    nb.style.cssText=`flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+      border-radius:var(--rs);font-weight:700;font-size:15px;padding:14px 18px;border:none;cursor:pointer;
       font-family:Outfit,sans-serif;transition:all .15s;
-      background:${allScored ? "var(--accent)" : "var(--surface2)"};
-      color:${allScored ? "#fff" : "var(--text)"};
-      box-shadow:${allScored ? "0 4px 16px rgba(0,0,0,0.2)" : "none"};
-      border: ${allScored ? "none" : "1.5px solid var(--border)"};`;
+      background:${allScored?"var(--accent)":"var(--surface2)"};
+      color:${allScored?"#fff":"var(--text)"};
+      box-shadow:${allScored?"0 4px 16px rgba(0,0,0,0.2)":"none"};
+      ${allScored?"":"border:1.5px solid var(--border);"}`;
+    nb.textContent = "Manche "+(currentRound+1)+" →";
+    nb.onclick=()=>upd(d=>({...d,current:{...d.current,round:d.current.round+1}}));
+    brow.appendChild(nb);
 
-    const saisies = scoredThisRound.length;
-    nb.innerHTML = allScored
-      ? `✅ Passer à la manche ${currentRound+1}`
-      : `⏭ Manche ${currentRound+1} <span style="font-size:11px;opacity:.7">(${saisies}/${s.players.length} saisies)</span>`;
-
-    nb.onclick = () => upd(d => ({...d, current:{...d.current, round: d.current.round+1}}));
-
-    const eb=btn("btn btn-d","🏁 Terminer",()=>{
+    // 🏁 End game
+    const eb=btn("btn btn-d","🏁",()=>{
       showModal((sheet,close)=>{
         const sorted=[...s.players].sort((a,b)=>b.total-a.total);
         sheet.appendChild(div("mtitle","🏁 Terminer la partie ?"));
@@ -883,16 +881,15 @@ function buildGame(pg){
         sheet.appendChild(cb);sheet.appendChild(kb);
       });
     });
-    eb.style.flex="0 0 auto";eb.style.padding="15px 18px";
-
-    brow.appendChild(nb);brow.appendChild(eb);
+    eb.style.cssText="flex-shrink:0;padding:14px 16px;border-radius:var(--rs);font-size:18px";
+    brow.appendChild(eb);
     wrap.appendChild(brow);
 
     // Info if nobody scored yet this round
     if(noneScored && currentRound > 1){
       const info = div("");
       info.style.cssText = "margin-top:10px;text-align:center;font-size:12px;color:var(--muted);line-height:1.5";
-      info.textContent = "Si personne ne marque de points, cliquez directement sur \"Manche " + (currentRound+1) + "\"";
+      info.textContent = "Si personne ne marque, passez directement à la manche suivante →";
       wrap.appendChild(info);
     }
   }
