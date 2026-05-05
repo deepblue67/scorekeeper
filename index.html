@@ -527,16 +527,17 @@ function buildGame(pg){
   if(gameTab==="detail"){
     const card=div("card");
     card.innerHTML=`<div class="ctitle">Détail par manche</div>`;
-    const maxR=Math.max(...s.players.map(p=>p.scores.length),1);
+    const maxR=s.round;
     let th=`<tr><th>Joueur</th>`;
-    for(let i=0;i<maxR;i++)th+=`<th style="text-align:center">M${i+1}</th>`;
+    for(let i=1;i<=maxR;i++)th+=`<th style="text-align:center">M${i}</th>`;
     th+=`<th style="text-align:right;color:var(--accent)">Total</th></tr>`;
     let tbody="";
     s.players.forEach(p=>{
       let row=`<tr><td>${p.emoji} ${p.name}</td>`;
-      for(let i=0;i<maxR;i++){
-        const sc=p.scores[i];
-        row+=sc!==undefined?`<td style="text-align:center;color:${sc<0?"#dc2626":"var(--text)"}">${sc>0?"+":""}${sc}</td>`:`<td style="text-align:center;color:var(--dim)">—</td>`;
+      for(let i=1;i<=maxR;i++){
+        const entry=p.scores.find(sc=>sc.r===i);
+        const v=entry?entry.v:undefined;
+        row+=v!==undefined?`<td style="text-align:center;color:${v<0?"#dc2626":"var(--text)"}">${v>0?"+":""}${v}</td>`:`<td style="text-align:center;color:var(--dim)">—</td>`;
       }
       row+=`<td style="text-align:right;color:${col(p.total)};font-weight:700">${p.total}</td></tr>`;
       tbody+=row;
@@ -589,10 +590,11 @@ function showNumpad(player){
       const score=neg?-n:n;
       upd(d=>{
         const s={...d.current};
+        const currentRound=s.round;
         s.players=s.players.map(p=>{
           if(p.id!==player.id)return p;
-          const scores=[...p.scores,score];
-          return{...p,scores,total:scores.reduce((a,b)=>a+b,0)};
+          const scores=[...p.scores,{r:currentRound,v:score}];
+          return{...p,scores,total:scores.reduce((a,b)=>a+b.v,0)};
         });
         return{...d,current:s};
       });
@@ -684,15 +686,21 @@ function buildHistDetail(wrap,s,back){
   });
   wrap.appendChild(div("slbl","Détail des manches"));
   const card=div("card");
-  const maxR=Math.max(...s.players.map(p=>p.scores.length),1);
+  const maxR=s.round||Math.max(...s.players.map(p=>p.scores.length),1);
   let th=`<tr><th>Joueur</th>`;
-  for(let i=0;i<maxR;i++)th+=`<th style="text-align:center">M${i+1}</th>`;
+  for(let i=1;i<=maxR;i++)th+=`<th style="text-align:center">M${i}</th>`;
   th+=`<th style="text-align:right;color:var(--accent)">Total</th></tr>`;
   let tbody="";
   s.players.forEach(p=>{
     let row=`<tr><td>${p.emoji} ${p.name}</td>`;
-    for(let i=0;i<maxR;i++){const sc=p.scores[i];row+=sc!==undefined?`<td style="text-align:center;color:${sc<0?"#dc2626":"var(--text)"}">${sc>0?"+":""}${sc}</td>`:`<td style="text-align:center;color:var(--dim)">—</td>`;}
-    row+=`<td style="text-align:right;color:${col(p.total)};font-weight:700">${p.total}</td></tr>`;
+    for(let i=1;i<=maxR;i++){
+      const entry=Array.isArray(p.scores)&&typeof p.scores[0]==="object"?p.scores.find(sc=>sc.r===i):undefined;
+      const legacyVal=Array.isArray(p.scores)&&typeof p.scores[i-1]==="number"?p.scores[i-1]:undefined;
+      const v=entry?entry.v:legacyVal;
+      row+=v!==undefined?`<td style="text-align:center;color:${v<0?"#dc2626":"var(--text)"}">${v>0?"+":""}${v}</td>`:`<td style="text-align:center;color:var(--dim)">—</td>`;
+    }
+    const total=Array.isArray(p.scores)?p.scores.reduce((a,b)=>a+(typeof b==="object"?b.v:b),0):0;
+    row+=`<td style="text-align:right;color:${col(total)};font-weight:700">${total}</td></tr>`;
     tbody+=row;
   });
   const tbl=el("table","dtable");tbl.innerHTML=th+tbody;
