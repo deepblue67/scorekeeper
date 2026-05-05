@@ -723,16 +723,32 @@ function buildGame(pg){
       avEl.className = avClass(p); avEl.textContent = p.emoji;
 
       const nameEl = document.createElement("div");
-      nameEl.className = "sr-name"; nameEl.textContent = p.name;
+      nameEl.style.cssText = "flex:1;display:flex;flex-direction:column;gap:2px";
+      const nameTop = document.createElement("div");
+      nameTop.style.cssText = "font-weight:600;font-size:15px";
+      nameTop.textContent = p.name;
+      const nameSub = document.createElement("div");
+      nameSub.style.cssText = "font-size:11px;color:var(--muted)";
+      nameSub.textContent = "Total: " + p.total + " pts · " + (hasScored ? "✓ saisi" : "en attente");
+      nameEl.appendChild(nameTop);
+      nameEl.appendChild(nameSub);
 
-      const statusEl = document.createElement("div");
-      statusEl.style.cssText = "font-size:11px;color:var(--muted);margin-right:4px";
-      statusEl.textContent = hasScored ? "✓ saisi" : "en attente";
+      const statusEl = document.createElement("div"); // empty placeholder
+      statusEl.style.display = "none";
+
+      // Show current round score (or — if not yet entered)
+      const roundEntry = p.scores ? p.scores.find(sc => sc.r === currentRound) : null;
+      const roundVal = roundEntry ? roundEntry.v : undefined;
 
       const totalEl = document.createElement("div");
       totalEl.className = "sr-total";
-      totalEl.style.color = col(p.total);
-      totalEl.textContent = p.total;
+      if(roundVal !== undefined){
+        totalEl.style.color = col(roundVal);
+        totalEl.textContent = (roundVal > 0 ? "+" : "") + roundVal;
+      } else {
+        totalEl.style.color = "var(--dim)";
+        totalEl.textContent = "—";
+      }
 
       const arrEl = document.createElement("div");
       arrEl.className = "sr-arr";
@@ -1023,6 +1039,7 @@ function showEditScore(player,round,existingVal,onDone){
 // ── HISTORY ──────────────────────────────────────────────────
 let histDetail=null;
 function buildHistory(pg){
+  pg.innerHTML="";
   const wrap=div("inner");
   pg.appendChild(wrap);
   if(histDetail){buildHistDetail(wrap,histDetail,()=>{histDetail=null;buildHistory(pg)});return;}
@@ -1065,7 +1082,7 @@ function buildHistory(pg){
           <span style="font-weight:700;font-size:14px">${winner.name}</span>
           <span style="margin-left:auto;font-family:DM Mono,monospace;color:var(--accent);font-weight:700">${winner.total} pts</span>
         </div>`:""}`;
-        card.onclick=()=>{histDetail=s;buildHistory(pg)};
+        card.onclick=()=>{histDetail=s;pg.innerHTML="";buildHistory(pg)};
         listWrap.appendChild(card);
       });
     });
@@ -1089,8 +1106,11 @@ function buildHistDetail(wrap,s,back){
   const shareBtn=btn("btn btn-s btn-sm","📤 Partager",()=>shareAsImage(s,sorted));
 
   const del=btn("btn btn-d btn-sm","🗑",()=>{
-    if(confirm("Supprimer cette partie ?"))upd(d=>({...d,sessions:d.sessions.filter(x=>x.id!==s.id)}));
-    wrap.innerHTML="";back();
+    if(confirm("Supprimer cette partie ?")){
+      upd(d=>({...d,sessions:d.sessions.filter(x=>x.id!==s.id)}));
+      wrap.innerHTML="";
+      back();
+    }
   });
   acts.appendChild(shareBtn);acts.appendChild(del);
   hdr.appendChild(bb);hdr.appendChild(acts);
