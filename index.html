@@ -1230,96 +1230,126 @@ function buildHistDetail(wrap,s,back){
 
 // ── SHARE AS IMAGE ──────────────────────────────────────────
 function shareAsImage(s,sorted){
-  // Build an offscreen canvas with the score card
-  const W=640, PAD=40;
+  const W=640, PAD=36;
   const canvas=document.createElement("canvas");
   const dpr=window.devicePixelRatio||2;
+  const cs=getComputedStyle(document.documentElement);
+  const bgCol=cs.getPropertyValue("--bg").trim()||"#5ba8a0";
+  const accentCol=cs.getPropertyValue("--accent").trim()||"#2e7d78";
 
-  // Measure height needed
-  const HEADER=120, ROW=72, FOOTER=60;
-  const H=HEADER + sorted.length*ROW + FOOTER + PAD*2;
+  // Compute rounds
+  const isObj=s.players.length>0&&s.players[0].scores.length>0&&typeof s.players[0].scores[0]==="object";
+  const maxR=s.round||Math.max(...s.players.map(p=>p.scores.length),1);
+
+  // Heights
+  const HEADER=130, RANK_ROW=64, SEC_GAP=50, TH=36, DET_ROW=44, FOOTER=50;
+  const H=HEADER + sorted.length*RANK_ROW + SEC_GAP + TH + s.players.length*DET_ROW + FOOTER + PAD;
+
   canvas.width=W*dpr; canvas.height=H*dpr;
   canvas.style.width=W+"px"; canvas.style.height=H+"px";
   const ctx=canvas.getContext("2d");
   ctx.scale(dpr,dpr);
 
-  // Get current theme colors
-  const cs=getComputedStyle(document.documentElement);
-  const bgCol=cs.getPropertyValue("--bg").trim()||"#5ba8a0";
-  const surfCol=cs.getPropertyValue("--surface").trim()||"#e8e0d0";
-  const accentCol=cs.getPropertyValue("--accent").trim()||"#2e7d78";
-  const textCol=cs.getPropertyValue("--text").trim()||"#1e3d3a";
-  const mutedCol=cs.getPropertyValue("--muted").trim()||"rgba(30,61,58,0.5)";
-
-  // Background gradient
+  // Background
   const grad=ctx.createLinearGradient(0,0,W,H);
-  grad.addColorStop(0,bgCol);
-  grad.addColorStop(1,accentCol);
-  ctx.fillStyle=grad;
-  ctx.fillRect(0,0,W,H);
+  grad.addColorStop(0,bgCol); grad.addColorStop(1,accentCol);
+  ctx.fillStyle=grad; ctx.fillRect(0,0,W,H);
 
   // Decorative circles
-  ctx.globalAlpha=0.12;
-  ctx.fillStyle="#fff";
-  ctx.beginPath();ctx.arc(W-60,60,120,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.arc(40,H-40,80,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=0.10; ctx.fillStyle="#fff";
+  ctx.beginPath();ctx.arc(W-50,50,110,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(30,H-30,70,0,Math.PI*2);ctx.fill();
   ctx.globalAlpha=1;
 
-  // Title
+  // ── HEADER ──
   ctx.fillStyle="#fff";
-  ctx.font="bold 32px sans-serif";
-  ctx.textAlign="left";
-  ctx.fillText("🏆 "+s.gameName, PAD, PAD+38);
-
-  ctx.font="16px sans-serif";
-  ctx.globalAlpha=0.75;
-  ctx.fillText(fmtDate(s.date)+" · "+s.players.length+" joueurs", PAD, PAD+66);
+  ctx.font="bold 30px sans-serif"; ctx.textAlign="left";
+  ctx.fillText("🏆 "+s.gameName, PAD, PAD+36);
+  ctx.font="15px sans-serif"; ctx.globalAlpha=0.75;
+  ctx.fillText(fmtDate(s.date)+" · "+s.players.length+" joueurs · "+maxR+" manche"+(maxR>1?"s":""), PAD, PAD+62);
   ctx.globalAlpha=1;
-
-  // Divider
   ctx.fillStyle="rgba(255,255,255,0.3)";
-  ctx.fillRect(PAD, HEADER, W-PAD*2, 1.5);
+  ctx.fillRect(PAD, HEADER-14, W-PAD*2, 1.5);
 
-  // Player rows
+  // ── CLASSEMENT ──
+  ctx.fillStyle="rgba(255,255,255,0.6)"; ctx.font="bold 11px sans-serif";
+  ctx.textAlign="left"; ctx.letterSpacing="2px";
+  ctx.fillText("CLASSEMENT", PAD, HEADER+2);
+  ctx.letterSpacing="0px";
+
   const medals=["🥇","🥈","🥉"];
   sorted.forEach((p,i)=>{
-    const y=HEADER+PAD/2+i*ROW;
+    const y=HEADER+14+i*RANK_ROW;
     const isFirst=i===0;
-
-    // Row background
-    ctx.globalAlpha=isFirst?0.22:0.10;
+    ctx.globalAlpha=isFirst?0.20:0.08;
     ctx.fillStyle="#fff";
-    roundRect(ctx, PAD-8, y+4, W-PAD*2+16, ROW-10, 16);
-    ctx.fill();
+    roundRect(ctx,PAD-6,y,W-PAD*2+12,RANK_ROW-8,14); ctx.fill();
     ctx.globalAlpha=1;
-
-    // Medal / rank
-    ctx.font=(isFirst?"28px":"22px")+" sans-serif";
-    ctx.textAlign="left";
-    ctx.fillText(medals[i]||(i+1+"°"), PAD+4, y+ROW/2+10);
-
-    // Emoji avatar
-    ctx.font="28px sans-serif";
-    ctx.fillText(p.emoji, PAD+54, y+ROW/2+10);
-
-    // Name
+    ctx.font=(isFirst?"26px":"20px")+" sans-serif"; ctx.textAlign="left";
+    ctx.fillText(medals[i]||(i+1+"°"), PAD+2, y+RANK_ROW/2+9);
+    ctx.font="24px sans-serif";
+    ctx.fillText(p.emoji, PAD+46, y+RANK_ROW/2+9);
     ctx.fillStyle="#fff";
-    ctx.font=(isFirst?"bold 22px":"18px")+" sans-serif";
-    ctx.textAlign="left";
-    ctx.fillText(p.name, PAD+100, y+ROW/2+8);
+    ctx.font=(isFirst?"bold 20px":"16px")+" sans-serif"; ctx.textAlign="left";
+    ctx.fillText(p.name, PAD+88, y+RANK_ROW/2+7);
+    ctx.font="bold "+(isFirst?"26px":"20px")+" monospace"; ctx.textAlign="right";
+    ctx.fillStyle=isFirst?"#FFD700":"rgba(255,255,255,0.9)";
+    ctx.fillText(p.total+" pts", W-PAD, y+RANK_ROW/2+8);
+    ctx.fillStyle="#fff";
+  });
 
-    // Score
-    ctx.font="bold "+(isFirst?"30px":"24px")+" monospace";
-    ctx.textAlign="right";
-    ctx.fillStyle=isFirst?"#FFD700":"#fff";
-    ctx.fillText(p.total+" pts", W-PAD, y+ROW/2+10);
+  // ── DETAIL MANCHES ──
+  const detY=HEADER+sorted.length*RANK_ROW+SEC_GAP;
+  ctx.fillStyle="rgba(255,255,255,0.3)";
+  ctx.fillRect(PAD, detY-24, W-PAD*2, 1.5);
+  ctx.fillStyle="rgba(255,255,255,0.6)"; ctx.font="bold 11px sans-serif";
+  ctx.textAlign="left";
+  ctx.fillText("DÉTAIL DES MANCHES", PAD, detY-6);
+
+  // Column widths
+  const nameW=130, colW=Math.min(60, (W-PAD*2-nameW-60)/(maxR||1)), totalW=70;
+  const tableX=PAD;
+
+  // Table header
+  ctx.globalAlpha=0.15; ctx.fillStyle="#fff";
+  roundRect(ctx,tableX,detY,W-PAD*2,TH,8); ctx.fill(); ctx.globalAlpha=1;
+  ctx.fillStyle="rgba(255,255,255,0.7)"; ctx.font="bold 12px sans-serif";
+  ctx.textAlign="left"; ctx.fillText("Joueur", tableX+10, detY+TH/2+5);
+  for(let i=1;i<=maxR;i++){
+    ctx.textAlign="center";
+    ctx.fillText("M"+i, tableX+nameW+(i-0.5)*colW, detY+TH/2+5);
+  }
+  ctx.textAlign="right"; ctx.fillStyle="#FFD700";
+  ctx.fillText("Total", tableX+(W-PAD*2)-4, detY+TH/2+5);
+
+  // Table rows
+  s.players.forEach((p,pi)=>{
+    const ry=detY+TH+pi*DET_ROW;
+    if(pi%2===0){ ctx.globalAlpha=0.06; ctx.fillStyle="#fff"; ctx.fillRect(tableX,ry,W-PAD*2,DET_ROW); ctx.globalAlpha=1; }
+    ctx.fillStyle="#fff"; ctx.font="13px sans-serif"; ctx.textAlign="left";
+    ctx.fillText(p.emoji+" "+p.name, tableX+10, ry+DET_ROW/2+5);
+    let rowTotal=0;
+    for(let i=1;i<=maxR;i++){
+      const entry=isObj?p.scores.find(sc=>sc.r===i):null;
+      const v=entry?entry.v:(isObj?undefined:p.scores[i-1]);
+      ctx.font="12px monospace"; ctx.textAlign="center";
+      if(v!==undefined){
+        ctx.fillStyle=v<0?"#ff9999":"rgba(255,255,255,0.9)";
+        ctx.fillText((v>0?"+":"")+v, tableX+nameW+(i-0.5)*colW, ry+DET_ROW/2+5);
+        rowTotal+=v;
+      } else {
+        ctx.fillStyle="rgba(255,255,255,0.3)";
+        ctx.fillText("—", tableX+nameW+(i-0.5)*colW, ry+DET_ROW/2+5);
+      }
+    }
+    ctx.font="bold 14px monospace"; ctx.textAlign="right";
+    ctx.fillStyle="#FFD700";
+    ctx.fillText(rowTotal, tableX+(W-PAD*2)-4, ry+DET_ROW/2+5);
   });
 
   // Footer
-  ctx.fillStyle="rgba(255,255,255,0.5)";
-  ctx.font="13px sans-serif";
-  ctx.textAlign="center";
-  ctx.fillText("ScoreKeeper", W/2, H-PAD/2+10);
+  ctx.fillStyle="rgba(255,255,255,0.4)"; ctx.font="12px sans-serif"; ctx.textAlign="center";
+  ctx.fillText("ScoreKeeper", W/2, H-18);
 
   // Export
   canvas.toBlob(blob=>{
@@ -1594,9 +1624,14 @@ function buildSettings(pg){
     });
     info.appendChild(nm);
     if((p.groups||[]).length) info.appendChild(tags);
+    // Edit button
+    const eb=btn("btn btn-g btn-sm","✏️",()=>{
+      showEditPlayer(p, ()=>buildSettings(document.getElementById("p-settings")));
+    });
+    eb.style.cssText="font-size:14px;padding:6px 8px;border-radius:8px;background:var(--surface2);border:1px solid var(--border)";
     const rb=btn("btn btn-g btn-sm","✕",()=>upd(d=>({...d,players:d.players.filter(x=>x.id!==p.id)})));
     rb.style.color="#c03030";
-    row.appendChild(av);row.appendChild(info);row.appendChild(rb);
+    row.appendChild(av);row.appendChild(info);row.appendChild(eb);row.appendChild(rb);
     pc.appendChild(row);
   });
   wrap.appendChild(pc);
@@ -1641,6 +1676,84 @@ function buildSettings(pg){
   var l=document.createElement("link");l.rel="manifest";l.href=URL.createObjectURL(b);
   document.head.appendChild(l);
 })();
+
+// ── EDIT PLAYER ────────────────────────────────────────────
+function showEditPlayer(player, onDone){
+  let editEmoji = player.emoji;
+  let editGroups = [...(player.groups||[])];
+
+  showModal((sheet,close)=>{
+    sheet.appendChild(div("mtitle","✏️ Modifier le joueur"));
+
+    // Emoji + name row
+    const topRow=div("");
+    topRow.style.cssText="display:flex;gap:10px;align-items:center;margin-bottom:14px";
+    const emojiBtn=document.createElement("button");
+    emojiBtn.style.cssText="width:52px;height:52px;font-size:24px;border-radius:13px;background:var(--surface2);border:1.5px solid var(--border);cursor:pointer;flex-shrink:0";
+    emojiBtn.textContent=editEmoji;
+    emojiBtn.onclick=()=>{
+      showModal((s2,c2)=>{
+        s2.appendChild(div("mtitle","Choisir un emoji"));
+        const grid=div("");grid.style.cssText="display:flex;flex-wrap:wrap;gap:9px";
+        EMOJIS.forEach(em=>{
+          const b=el("button","nk",em);
+          b.style.cssText="width:52px;height:52px;font-size:24px;border-radius:13px";
+          b.onclick=()=>{editEmoji=em;emojiBtn.textContent=em;c2();};
+          grid.appendChild(b);
+        });
+        s2.appendChild(grid);
+      });
+    };
+
+    const nameInp=el("input","inp","",{type:"text"});
+    nameInp.value=player.name;
+    nameInp.style.flex="1";
+
+    topRow.appendChild(emojiBtn);
+    topRow.appendChild(nameInp);
+    sheet.appendChild(topRow);
+
+    // Groups
+    const grpLbl=div("");
+    grpLbl.style.cssText="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px";
+    grpLbl.textContent="Groupes";
+    sheet.appendChild(grpLbl);
+
+    const grpRow=div("");
+    grpRow.style.cssText="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px";
+    function refreshGrpBtns(){
+      grpRow.innerHTML="";
+      GROUPS.forEach(g=>{
+        const isOn=editGroups.includes(g.id);
+        const gb=document.createElement("button");
+        gb.style.cssText=`display:flex;align-items:center;gap:5px;padding:8px 14px;border-radius:99px;
+          font-size:13px;font-weight:600;cursor:pointer;font-family:Outfit,sans-serif;transition:all .15s;border:1.5px solid;
+          background:${isOn?"var(--accent)":"var(--surface2)"};
+          color:${isOn?"#fff":"var(--text)"};
+          border-color:${isOn?"var(--accent)":"var(--border)"}`;
+        gb.textContent=g.icon+" "+g.label;
+        gb.onclick=()=>{
+          if(isOn) editGroups=editGroups.filter(x=>x!==g.id);
+          else editGroups=[...editGroups,g.id];
+          refreshGrpBtns();
+        };
+        grpRow.appendChild(gb);
+      });
+    }
+    refreshGrpBtns();
+    sheet.appendChild(grpRow);
+
+    // Save
+    const saveBtn=btn("btn btn-p btn-full","✓ Enregistrer",()=>{
+      if(!nameInp.value.trim())return;
+      upd(d=>({...d,players:d.players.map(p=>
+        p.id===player.id ? {...p, name:nameInp.value.trim(), emoji:editEmoji, groups:editGroups} : p
+      )}));
+      close(); onDone();
+    });
+    sheet.appendChild(saveBtn);
+  });
+}
 
 // ── BOOT ──────────────────────────────────────────────────────
 render();
