@@ -294,12 +294,17 @@ const LOGO = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0Z
 const KEY = "sk_v3";
 const EMOJIS = ["\ud83e\udd8a","\ud83d\udc3c","\ud83e\udd81","\ud83d\udc38","\ud83d\udc19","\ud83e\uddb8","\ud83e\udd9a","\ud83e\udd84","\ud83d\udc2f","\ud83e\udd85","\ud83d\udc2c","\u2b50","\ud83d\udd25","\u26a1","\ud83c\udfae"];
 const AVCOLORS = ["av0","av1","av2","av3","av4","av5"];
+const GROUPS = [
+  {id:"famille", label:"Famille", icon:"👨‍👩‍👧"},
+  {id:"amis",    label:"Amis",    icon:"👫"},
+  {id:"travail", label:"Travail", icon:"💼"}
+];
 const DEF = {
   games:["Belote","UNO","Rummy","8 américain","Scrabble","Poker","421","Yams","Cluedo","Trivial Pursuit"],
   players:[
-    {id:"p1",name:"Alice",emoji:"\ud83e\udd8a",color:"av0"},
-    {id:"p2",name:"Bob",emoji:"\ud83d\udc3c",color:"av1"},
-    {id:"p3",name:"Charlie",emoji:"\ud83e\udd81",color:"av2"}
+    {id:"p1",name:"Alice",emoji:"\ud83e\udd8a",color:"av0",groups:["famille"]},
+    {id:"p2",name:"Bob",emoji:"\ud83d\udc3c",color:"av1",groups:["amis"]},
+    {id:"p3",name:"Charlie",emoji:"\ud83e\udd81",color:"av2",groups:["travail"]}
   ],
   sessions:[],
   current:null
@@ -436,20 +441,87 @@ function buildHome(pg){
   const padd=btn("btn btn-s btn-sm","+ Ajouter",()=>{
     showModal((sheet,close)=>{
       sheet.appendChild(div("mtitle","Sélectionner les joueurs"));
-      const list=div("");
+
+      // Group filter bar
+      let activeGroup = "tous";
+      const filterBar = div("");
+      filterBar.style.cssText = "display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap";
+
+      function buildFilterBar(){
+        filterBar.innerHTML = "";
+        const allGroups = [{id:"tous",label:"Tous",icon:"👥"}, ...GROUPS];
+        allGroups.forEach(g => {
+          const isActive = activeGroup === g.id;
+          const fb = document.createElement("button");
+          fb.style.cssText = `display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:99px;
+            font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid;font-family:Outfit,sans-serif;transition:all .15s;
+            background:${isActive?"var(--accent)":"var(--surface2)"};
+            color:${isActive?"#fff":"var(--text)"};
+            border-color:${isActive?"var(--accent)":"var(--border)"};`;
+          fb.textContent = g.icon + " " + g.label;
+          fb.onclick = () => { activeGroup = g.id; buildFilterBar(); refreshList(); };
+          filterBar.appendChild(fb);
+        });
+      }
+      buildFilterBar();
+      sheet.appendChild(filterBar);
+
+      const list = div("");
       function refreshList(){
-        list.innerHTML="";
-        D.players.forEach(p=>{
-          const isSel=selPlayers.find(x=>x.id===p.id);
-          const row=div("",`<div style="display:flex;align-items:center;gap:11px;padding:11px 13px;background:${isSel?"rgba(232,64,12,.06)":"var(--surface2)"};border:1.5px solid ${isSel?"var(--accent)":"var(--border)"};border-radius:12px;cursor:pointer;margin-bottom:7px;transition:all .15s">
+        list.innerHTML = "";
+        const filtered = activeGroup === "tous"
+          ? D.players
+          : D.players.filter(p => (p.groups||[]).includes(activeGroup));
+
+        if(!filtered.length){
+          list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-size:14px">Aucun joueur dans ce groupe</div>`;
+          return;
+        }
+
+        // Group header + select all button
+        if(activeGroup !== "tous"){
+          const g = GROUPS.find(x=>x.id===activeGroup);
+          const gh = div("");
+          gh.style.cssText = "display:flex;align-items:center;justify-content:space-between;margin-bottom:8px";
+          const allInGroup = filtered.every(p => selPlayers.find(x=>x.id===p.id));
+          const selAllBtn = document.createElement("button");
+          selAllBtn.style.cssText = "font-size:12px;font-weight:600;color:var(--accent);background:none;border:none;cursor:pointer;font-family:Outfit,sans-serif;padding:4px 8px";
+          selAllBtn.textContent = allInGroup ? "Tout désélectionner" : "Tout sélectionner";
+          selAllBtn.onclick = () => {
+            if(allInGroup) selPlayers = selPlayers.filter(p => !filtered.find(f=>f.id===p.id));
+            else {
+              filtered.forEach(p => { if(!selPlayers.find(x=>x.id===p.id)) selPlayers.push(p); });
+            }
+            refreshList(); refreshPlayers(); updateBtn();
+          };
+          gh.appendChild(selAllBtn);
+          list.appendChild(gh);
+        }
+
+        filtered.forEach(p => {
+          const isSel = selPlayers.find(x=>x.id===p.id);
+          const groupTags = (p.groups||[]).map(gid => {
+            const g = GROUPS.find(x=>x.id===gid);
+            return g ? `<span style="font-size:10px;background:var(--surface2);border-radius:99px;padding:2px 7px;margin-left:4px">${g.icon}</span>` : "";
+          }).join("");
+
+          const row = div("");
+          row.style.cssText = `display:flex;align-items:center;gap:11px;padding:11px 13px;
+            background:${isSel?"rgba(46,125,120,0.08)":"var(--surface2)"};
+            border:1.5px solid ${isSel?"var(--accent)":"var(--border)"};
+            border-radius:12px;cursor:pointer;margin-bottom:7px;transition:all .15s`;
+          row.innerHTML = `
             <div class="${avClass(p)}">${p.emoji}</div>
-            <span style="flex:1;font-weight:600;font-size:15px">${p.name}</span>
-            <div style="width:23px;height:23px;border-radius:7px;border:2px solid ${isSel?"var(--accent)":"var(--border)"};background:${isSel?"var(--accent)":"transparent"};display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700">${isSel?"✓":""}</div>
-          </div>`);
-          row.firstChild.onclick=()=>{
-            if(isSel)selPlayers=selPlayers.filter(x=>x.id!==p.id);
-            else selPlayers=[...selPlayers,p];
-            refreshList();refreshPlayers();updateBtn();
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:15px">${p.name}${groupTags}</div>
+            </div>
+            <div style="width:23px;height:23px;border-radius:7px;border:2px solid ${isSel?"var(--accent)":"var(--border)"};
+              background:${isSel?"var(--accent)":"transparent"};display:flex;align-items:center;justify-content:center;
+              color:#fff;font-size:13px;font-weight:700">${isSel?"✓":""}</div>`;
+          row.onclick = () => {
+            if(isSel) selPlayers = selPlayers.filter(x=>x.id!==p.id);
+            else selPlayers = [...selPlayers, p];
+            refreshList(); refreshPlayers(); updateBtn();
           };
           list.appendChild(row);
         });
@@ -1438,10 +1510,11 @@ function buildSettings(pg){
   wrap.appendChild(div("slbl","Joueurs ("+D.players.length+")"));
   const pc=div("card");
   let selEmoji="\ud83c\udfae";
-  const addRow=div("",`<div style="display:flex;gap:7px;margin-bottom:11px"></div>`);
+  let selGroups = [];
+
   const emojiBtn=el("button","btn btn-s btn-ico","",{});
   emojiBtn.textContent=selEmoji;
-  emojiBtn.style.width="50px";emojiBtn.style.height="50px";emojiBtn.style.fontSize="22px";
+  emojiBtn.style.cssText="width:50px;height:50px;font-size:22px;border-radius:12px;background:var(--surface2);border:1.5px solid var(--border);cursor:pointer;flex-shrink:0";
   emojiBtn.onclick=()=>{
     showModal((sheet,close)=>{
       sheet.appendChild(div("mtitle","Choisir un emoji"));
@@ -1455,26 +1528,76 @@ function buildSettings(pg){
       sheet.appendChild(grid);
     });
   };
+
   const nameInp=el("input","inp","",{type:"text",placeholder:"Nom du joueur…"});
   nameInp.style.flex="1";
-  const addBtn=btn("btn btn-p btn-sm","+",()=>{
+
+  const addRow=div("");
+  addRow.style.cssText="display:flex;gap:7px;margin-bottom:10px;align-items:center";
+  addRow.appendChild(emojiBtn);addRow.appendChild(nameInp);
+  pc.appendChild(addRow);
+
+  // Group selector
+  const grpLbl = div("");
+  grpLbl.style.cssText="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:7px";
+  grpLbl.textContent="Groupes";
+  pc.appendChild(grpLbl);
+
+  const grpRow=div("");
+  grpRow.style.cssText="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:11px";
+  function refreshGroupBtns(){
+    grpRow.innerHTML="";
+    GROUPS.forEach(g=>{
+      const isOn=selGroups.includes(g.id);
+      const gb=document.createElement("button");
+      gb.style.cssText=`display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:99px;
+        font-size:13px;font-weight:600;cursor:pointer;font-family:Outfit,sans-serif;transition:all .15s;border:1.5px solid;
+        background:${isOn?"var(--accent)":"var(--surface2)"};
+        color:${isOn?"#fff":"var(--text)"};
+        border-color:${isOn?"var(--accent)":"var(--border)"}`;
+      gb.textContent=g.icon+" "+g.label;
+      gb.onclick=()=>{
+        if(isOn) selGroups=selGroups.filter(x=>x!==g.id);
+        else selGroups=[...selGroups,g.id];
+        refreshGroupBtns();
+      };
+      grpRow.appendChild(gb);
+    });
+  }
+  refreshGroupBtns();
+  pc.appendChild(grpRow);
+
+  const addBtn=btn("btn btn-p btn-full","+ Ajouter le joueur",()=>{
     if(!nameInp.value.trim())return;
     const color=AVCOLORS[D.players.length%AVCOLORS.length];
-    upd(d=>({...d,players:[...d.players,{id:uid(),name:nameInp.value.trim(),emoji:selEmoji,color}]}));
-    nameInp.value="";selEmoji="\ud83c\udfae";emojiBtn.textContent=selEmoji;
+    upd(d=>({...d,players:[...d.players,{id:uid(),name:nameInp.value.trim(),emoji:selEmoji,color,groups:selGroups}]}));
+    nameInp.value="";selEmoji="\ud83c\udfae";emojiBtn.textContent=selEmoji;selGroups=[];refreshGroupBtns();
   });
   nameInp.onkeydown=e=>{if(e.key==="Enter")addBtn.click()};
-  addRow.firstChild.appendChild(emojiBtn);addRow.firstChild.appendChild(nameInp);addRow.firstChild.appendChild(addBtn);
-  pc.appendChild(addRow.firstChild);
+  pc.appendChild(addBtn);
   D.players.forEach(p=>{
-    const row=div("",`<div style="display:flex;align-items:center;gap:9px;padding:9px 0;border-top:1px solid var(--border)">
-      <div class="${avClass(p)}">${p.emoji}</div>
-      <span style="flex:1;font-weight:500">${p.name}</span>
-    </div>`);
+    const row=div("");
+    row.style.cssText="display:flex;align-items:center;gap:9px;padding:9px 0;border-top:1px solid var(--border)";
+    const av=div(avClass(p),p.emoji);
+    const info=div("");
+    info.style.cssText="flex:1;display:flex;flex-direction:column;gap:3px";
+    const nm=div("");nm.style.cssText="font-weight:500;font-size:14px";nm.textContent=p.name;
+    const tags=div("");
+    tags.style.cssText="display:flex;gap:4px;flex-wrap:wrap";
+    (p.groups||[]).forEach(gid=>{
+      const g=GROUPS.find(x=>x.id===gid);
+      if(!g)return;
+      const tag=div("");
+      tag.style.cssText="font-size:10px;background:var(--surface2);border-radius:99px;padding:2px 8px;color:var(--muted);font-weight:600";
+      tag.textContent=g.icon+" "+g.label;
+      tags.appendChild(tag);
+    });
+    info.appendChild(nm);
+    if((p.groups||[]).length) info.appendChild(tags);
     const rb=btn("btn btn-g btn-sm","✕",()=>upd(d=>({...d,players:d.players.filter(x=>x.id!==p.id)})));
-    rb.style.color="#dc2626";
-    row.firstChild.appendChild(rb);
-    pc.appendChild(row.firstChild);
+    rb.style.color="#c03030";
+    row.appendChild(av);row.appendChild(info);row.appendChild(rb);
+    pc.appendChild(row);
   });
   wrap.appendChild(pc);
 
