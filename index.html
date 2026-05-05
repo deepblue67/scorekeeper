@@ -535,95 +535,120 @@ function buildHome(pg){
       return;
     }
     pl.innerHTML="";
-    let dragSrc=null;
 
-    selPlayers.forEach((p,idx)=>{
-      const row=document.createElement("div");
-      row.style.cssText="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;margin-bottom:6px;cursor:grab;transition:opacity .2s;user-select:none;-webkit-user-select:none;border:1.5px solid transparent";
-      row.draggable=true;
-      row.dataset.idx=idx;
+    function buildRows(){
+      pl.innerHTML="";
+      selPlayers.forEach((p,idx)=>{
+        const row=document.createElement("div");
+        row.className="drag-row";
+        row.dataset.idx=idx;
+        row.style.cssText="display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--surface2);border-radius:11px;margin-bottom:7px;border:1.5px solid transparent;transition:border-color .15s,box-shadow .15s;touch-action:none;user-select:none;-webkit-user-select:none;position:relative";
 
-      const num=document.createElement("div");
-      num.style.cssText="width:22px;height:22px;border-radius:7px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0";
-      num.textContent=idx+1;
+        const num=document.createElement("div");
+        num.style.cssText="width:22px;height:22px;border-radius:7px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0";
+        num.textContent=idx+1;
 
-      const handle=document.createElement("div");
-      handle.style.cssText="font-size:15px;color:var(--dim);flex-shrink:0;padding:0 2px;letter-spacing:-1px";
-      handle.textContent="⠿";
+        const handle=document.createElement("div");
+        handle.style.cssText="font-size:18px;color:var(--dim);flex-shrink:0;padding:0 2px;line-height:1";
+        handle.innerHTML="&#8942;&#8942;";
 
-      const av=document.createElement("div");
-      av.className=avClass(p);av.textContent=p.emoji;
+        const av=document.createElement("div");
+        av.className=avClass(p);av.textContent=p.emoji;
 
-      const name=document.createElement("span");
-      name.style.cssText="flex:1;font-weight:600;font-size:15px";
-      name.textContent=p.name;
+        const name=document.createElement("span");
+        name.style.cssText="flex:1;font-weight:600;font-size:15px";
+        name.textContent=p.name;
 
-      const rb=document.createElement("button");
-      rb.style.cssText="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:4px 6px;border-radius:6px";
-      rb.textContent="✕";
-      rb.onclick=e=>{e.stopPropagation();selPlayers=selPlayers.filter(x=>x.id!==p.id);refreshPlayers();updateBtn();};
+        const rb=document.createElement("button");
+        rb.style.cssText="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;flex-shrink:0";
+        rb.textContent="✕";
+        rb.onclick=e=>{e.stopPropagation();selPlayers=selPlayers.filter(x=>x.id!==p.id);buildRows();updateBtn();};
 
-      row.appendChild(num);row.appendChild(handle);row.appendChild(av);row.appendChild(name);row.appendChild(rb);
+        row.appendChild(num);row.appendChild(handle);row.appendChild(av);row.appendChild(name);row.appendChild(rb);
+        pl.appendChild(row);
 
-      // Desktop drag
-      row.addEventListener("dragstart",e=>{
-        dragSrc=idx;e.dataTransfer.effectAllowed="move";
-        setTimeout(()=>{row.style.opacity="0.4";},0);
-      });
-      row.addEventListener("dragend",()=>{
-        row.style.opacity="1";
-        pl.querySelectorAll("div[draggable]").forEach(r=>{r.style.borderColor="transparent";});
-      });
-      row.addEventListener("dragover",e=>{
-        e.preventDefault();
-        if(dragSrc!==null&&dragSrc!==idx) row.style.borderColor="var(--accent)";
-      });
-      row.addEventListener("dragleave",()=>row.style.borderColor="transparent");
-      row.addEventListener("drop",e=>{
-        e.preventDefault();
-        row.style.borderColor="transparent";
-        if(dragSrc===null||dragSrc===idx)return;
-        const moved=selPlayers.splice(dragSrc,1)[0];
-        selPlayers.splice(idx,0,moved);
-        dragSrc=null;
-        refreshPlayers();updateBtn();
-      });
+        // ── TOUCH DRAG (iOS) ──────────────────────────────
+        let ghost=null, startY=0, startIdx=0, currentTarget=-1;
 
-      // iOS touch drag
-      let ty=0,ti=null;
-      row.addEventListener("touchstart",e=>{
-        ty=e.touches[0].clientY;ti=idx;
-        row.style.opacity="0.6";row.style.transform="scale(1.03)";
-      },{passive:true});
-      row.addEventListener("touchmove",e=>{
-        e.preventDefault();
-      },{passive:false});
-      row.addEventListener("touchend",e=>{
-        row.style.opacity="1";row.style.transform="";
-        const y=e.changedTouches[0].clientY;
-        const rows=[...pl.querySelectorAll("div[draggable]")];
-        let target=ti;
-        rows.forEach((r,i)=>{
-          const rc=r.getBoundingClientRect();
-          if(y>=rc.top&&y<=rc.bottom)target=i;
+        handle.addEventListener("touchstart",e=>{
+          e.preventDefault();
+          startY=e.touches[0].clientY;
+          startIdx=idx;
+          currentTarget=idx;
+
+          // Create ghost clone
+          const rect=row.getBoundingClientRect();
+          ghost=row.cloneNode(true);
+          ghost.style.cssText=`position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;z-index:999;opacity:0.85;border-radius:11px;background:var(--surface);box-shadow:0 8px 24px rgba(0,0,0,0.25);pointer-events:none;transition:none;display:flex;align-items:center;gap:10px;padding:11px 13px;border:2px solid var(--accent)`;
+          document.body.appendChild(ghost);
+          row.style.opacity="0.3";
+        },{passive:false});
+
+        handle.addEventListener("touchmove",e=>{
+          if(!ghost)return;
+          e.preventDefault();
+          const dy=e.touches[0].clientY - startY;
+          ghost.style.transform=`translateY(${dy}px)`;
+
+          // Find which row we're hovering
+          const y=e.touches[0].clientY;
+          const rows=[...pl.querySelectorAll(".drag-row")];
+          rows.forEach((r,i)=>{
+            r.style.borderColor="transparent";
+            r.style.boxShadow="none";
+          });
+          let hoverIdx=startIdx;
+          rows.forEach((r,i)=>{
+            const rc=r.getBoundingClientRect();
+            if(y>=rc.top && y<=rc.bottom){
+              hoverIdx=i;
+              if(i!==startIdx){
+                r.style.borderColor="var(--accent)";
+                r.style.boxShadow="0 0 0 2px var(--accent)";
+              }
+            }
+          });
+          currentTarget=hoverIdx;
+        },{passive:false});
+
+        handle.addEventListener("touchend",e=>{
+          if(ghost){ghost.remove();ghost=null;}
+          row.style.opacity="1";
+          const rows=[...pl.querySelectorAll(".drag-row")];
+          rows.forEach(r=>{r.style.borderColor="transparent";r.style.boxShadow="none";});
+
+          if(currentTarget!==-1 && currentTarget!==startIdx){
+            const moved=selPlayers.splice(startIdx,1)[0];
+            selPlayers.splice(currentTarget,0,moved);
+            updateBtn();
+          }
+          buildRows();
+        },{passive:true});
+
+        // ── MOUSE DRAG (desktop) ──────────────────────────
+        let dragSrc=null;
+        row.draggable=true;
+        row.addEventListener("dragstart",e=>{dragSrc=idx;e.dataTransfer.effectAllowed="move";setTimeout(()=>row.style.opacity="0.3",0);});
+        row.addEventListener("dragend",()=>{row.style.opacity="1";pl.querySelectorAll(".drag-row").forEach(r=>{r.style.borderColor="transparent";});});
+        row.addEventListener("dragover",e=>{e.preventDefault();if(dragSrc!==idx)row.style.borderColor="var(--accent)";});
+        row.addEventListener("dragleave",()=>row.style.borderColor="transparent");
+        row.addEventListener("drop",e=>{
+          e.preventDefault();row.style.borderColor="transparent";
+          if(dragSrc===null||dragSrc===idx)return;
+          const moved=selPlayers.splice(dragSrc,1)[0];
+          selPlayers.splice(idx,0,moved);
+          dragSrc=null;buildRows();updateBtn();
         });
-        if(target!==ti){
-          const moved=selPlayers.splice(ti,1)[0];
-          selPlayers.splice(target,0,moved);
-          refreshPlayers();updateBtn();
-        }
-        ti=null;
-      },{passive:true});
+      });
 
-      pl.appendChild(row);
-    });
-
-    if(selPlayers.length>1){
-      const hint=document.createElement("div");
-      hint.style.cssText="text-align:center;font-size:11px;color:var(--muted);margin-top:2px";
-      hint.textContent="⠿ Glisser pour réordonner";
-      pl.appendChild(hint);
+      if(selPlayers.length>1){
+        const hint=document.createElement("div");
+        hint.style.cssText="text-align:center;font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:.02em";
+        hint.textContent="Maintenir ⠿ et glisser pour réordonner";
+        pl.appendChild(hint);
+      }
     }
+    buildRows();
   }
 
   function updateBtn(){
