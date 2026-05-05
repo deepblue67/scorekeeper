@@ -695,29 +695,88 @@ function buildGame(pg){
   wrap.appendChild(tb);
 
   if(gameTab==="scores"){
+    const currentRound = s.round;
+
+    // Which players already scored this round
+    const scoredThisRound = s.players.filter(p =>
+      p.scores.find(sc => sc.r === currentRound)
+    );
+    const allScored = scoredThisRound.length === s.players.length;
+    const noneScored = scoredThisRound.length === 0;
+
+    // Status bar
     const sb=div("statusbar");
-    sb.innerHTML=`<div class="sdot"></div><span style="font-size:13px;font-weight:600">Partie en cours</span><span style="margin-left:auto;font-size:12px;color:var(--muted)">Toucher pour saisir</span>`;
+    const progress = scoredThisRound.length + "/" + s.players.length;
+    sb.innerHTML=`<div class="sdot"></div>
+      <span style="font-size:13px;font-weight:600">Manche ${currentRound}</span>
+      <span style="margin-left:auto;font-size:12px;color:var(--muted)">${scoredThisRound.length === s.players.length ? "✅ Tous ont saisi" : progress + " ont saisi"}</span>`;
     wrap.appendChild(sb);
+
+    // Player rows
     s.players.forEach(p=>{
+      const hasScored = !!p.scores.find(sc => sc.r === currentRound);
       const row=div("score-row");
-      row.innerHTML=`<div class="${avClass(p)}">${p.emoji}</div>
-        <div class="sr-name">${p.name}</div>
-        <div class="sr-rounds">${p.scores.length}m</div>
-        <div class="sr-total" style="color:${col(p.total)}">${p.total}</div>
-        <div class="sr-arr">›</div>`;
-      row.onclick=()=>showNumpad(p);
+      row.style.opacity = hasScored ? "0.6" : "1";
+      row.style.borderColor = hasScored ? "var(--accent)" : "transparent";
+
+      const avEl = document.createElement("div");
+      avEl.className = avClass(p); avEl.textContent = p.emoji;
+
+      const nameEl = document.createElement("div");
+      nameEl.className = "sr-name"; nameEl.textContent = p.name;
+
+      const statusEl = document.createElement("div");
+      statusEl.style.cssText = "font-size:11px;color:var(--muted);margin-right:4px";
+      statusEl.textContent = hasScored ? "✓ saisi" : "en attente";
+
+      const totalEl = document.createElement("div");
+      totalEl.className = "sr-total";
+      totalEl.style.color = col(p.total);
+      totalEl.textContent = p.total;
+
+      const arrEl = document.createElement("div");
+      arrEl.className = "sr-arr";
+      arrEl.textContent = hasScored ? "✏️" : "›";
+
+      row.appendChild(avEl);
+      row.appendChild(nameEl);
+      row.appendChild(statusEl);
+      row.appendChild(totalEl);
+      row.appendChild(arrEl);
+
+      // Always tappable: if already scored → edit, if not → add
+      row.onclick = () => showNumpad(p);
       wrap.appendChild(row);
     });
-    const btns=div("",`<div style="display:flex;gap:10px;margin-top:14px"></div>`).firstChild||div("",`<div style="display:flex;gap:10px;margin-top:14px"></div>`);
+
+    // Next round button — prominent when all scored, always available
     const brow=div("");
-    brow.style.cssText="display:flex;gap:10px;margin-top:14px";
-    const nb=btn("btn btn-s","+ Manche "+(s.round+1),()=>upd(d=>({...d,current:{...d.current,round:d.current.round+1}})));
-    nb.style.flex="1";
-    const eb=btn("btn btn-d","Terminer \ud83c\udfc1",()=>{
+    brow.style.cssText="display:flex;gap:10px;margin-top:16px";
+
+    const nb = document.createElement("button");
+    nb.style.cssText = `flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+      border-radius:var(--rs);font-weight:700;font-size:15px;padding:15px 18px;border:none;cursor:pointer;
+      font-family:Outfit,sans-serif;transition:all .15s;
+      background:${allScored ? "var(--accent)" : "var(--surface2)"};
+      color:${allScored ? "#fff" : "var(--text)"};
+      box-shadow:${allScored ? "0 4px 16px rgba(0,0,0,0.2)" : "none"};
+      border: ${allScored ? "none" : "1.5px solid var(--border)"};`;
+
+    const saisies = scoredThisRound.length;
+    nb.innerHTML = allScored
+      ? `✅ Passer à la manche ${currentRound+1}`
+      : `⏭ Manche ${currentRound+1} <span style="font-size:11px;opacity:.7">(${saisies}/${s.players.length} saisies)</span>`;
+
+    nb.onclick = () => upd(d => ({...d, current:{...d.current, round: d.current.round+1}}));
+
+    const eb=btn("btn btn-d","🏁 Terminer",()=>{
       showModal((sheet,close)=>{
-        sheet.appendChild(div("mtitle","\ud83c\udfc1 Terminer la partie ?"));
-        sheet.appendChild(div("",`<div style="color:var(--muted);font-size:14px;margin-bottom:18px;line-height:1.6">Le gagnant est <strong style="color:var(--accent)">${sorted[0]?.name}</strong> avec <strong>${sorted[0]?.total} pts</strong>.</div>`));
-        const cb=btn("btn btn-p btn-full","Confirmer \ud83c\udf89",()=>{
+        const sorted=[...s.players].sort((a,b)=>b.total-a.total);
+        sheet.appendChild(div("mtitle","🏁 Terminer la partie ?"));
+        sheet.appendChild(div("",`<div style="color:var(--muted);font-size:14px;margin-bottom:18px;line-height:1.6">
+          Le gagnant est <strong style="color:var(--accent)">${sorted[0]?.name}</strong> avec <strong>${sorted[0]?.total} pts</strong>.
+        </div>`));
+        const cb=btn("btn btn-p btn-full","Confirmer 🎉",()=>{
           const finished={...s,finishedAt:Date.now()};
           upd(d=>({...d,current:null,sessions:[...d.sessions,finished]}));
           confetti();close();goTab("history");
@@ -727,9 +786,18 @@ function buildGame(pg){
         sheet.appendChild(cb);sheet.appendChild(kb);
       });
     });
-    eb.style.flex="1";
+    eb.style.flex="0 0 auto";eb.style.padding="15px 18px";
+
     brow.appendChild(nb);brow.appendChild(eb);
     wrap.appendChild(brow);
+
+    // Info if nobody scored yet this round
+    if(noneScored && currentRound > 1){
+      const info = div("");
+      info.style.cssText = "margin-top:10px;text-align:center;font-size:12px;color:var(--muted);line-height:1.5";
+      info.textContent = "Si personne ne marque de points, cliquez directement sur \"Manche " + (currentRound+1) + "\"";
+      wrap.appendChild(info);
+    }
   }
 
   if(gameTab==="rank"){
@@ -795,24 +863,32 @@ function buildGame(pg){
 
 // ── NUMPAD ──────────────────────────────────────────────────
 function showNumpad(player){
-  let val="",neg=false;
+  const currentRound = D.current ? D.current.round : 1;
+  const existingEntry = player.scores ? player.scores.find(sc=>sc.r===currentRound) : null;
+  const existingVal = existingEntry ? existingEntry.v : undefined;
+  let val = existingVal!==undefined ? String(Math.abs(existingVal)) : "";
+  let neg = existingVal!==undefined && existingVal<0;
+  const isEdit = existingVal!==undefined;
+
   showModal((sheet,close)=>{
-    const head=div("",`<div style="display:flex;align-items:center;gap:11px;margin-bottom:18px">
-      <div class="${avClass(player)}">${player.emoji}</div>
-      <div style="font-size:18px;font-weight:700;flex:1">${player.name}</div>
-      <div style="font-size:13px;color:var(--muted)">Total: ${player.total}</div>
-    </div>`);
+    const head=div("");
+    head.style.cssText="display:flex;align-items:center;gap:11px;margin-bottom:18px";
+    head.innerHTML=`<div class="${avClass(player)}">${player.emoji}</div>
+      <div style="flex:1">
+        <div style="font-size:17px;font-weight:700">${player.name}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${isEdit?"✏️ Modifier — ":""}Manche ${currentRound} · Total: ${player.total}</div>
+      </div>`;
     sheet.appendChild(head);
 
-    const disp=div("ndisp","0");
-    disp.style.color="var(--accent)";
+    const disp=div("ndisp");
+    disp.style.color=neg?"#c03030":"var(--accent)";
+    disp.textContent=val===""?"0":(neg?"-":"+")+val;
     sheet.appendChild(disp);
-    sheet.appendChild(div("",`<div style="text-align:center;font-size:12px;color:var(--muted);margin:5px 0 2px">points pour cette manche</div>`));
+    sheet.appendChild(div("",`<div style="text-align:center;font-size:12px;color:var(--muted);margin:5px 0 2px">points — manche ${currentRound}</div>`));
 
     function refresh(){
-      const display=val===""?"0":(neg?"-":"+")+val;
-      disp.textContent=display;
-      disp.style.color=neg?"#dc2626":"var(--accent)";
+      disp.textContent=val===""?"0":(neg?"-":"+")+val;
+      disp.style.color=neg?"#c03030":"var(--accent)";
     }
 
     const grid=div("numpad-grid");
@@ -828,26 +904,42 @@ function showNumpad(player){
     });
     sheet.appendChild(grid);
 
-    const cb=btn("btn btn-p btn-full","Valider",()=>{
+    if(isEdit){
+      const delBtn=btn("btn btn-d btn-full","🗑 Supprimer ce score",()=>{
+        upd(d=>{
+          const s={...d.current};
+          s.players=s.players.map(p=>{
+            if(p.id!==player.id)return p;
+            const scores=p.scores.filter(sc=>sc.r!==currentRound);
+            return{...p,scores,total:scores.reduce((a,b)=>a+b.v,0)};
+          });
+          return{...d,current:s};
+        });
+        close();
+      });
+      delBtn.style.marginTop="12px";
+      sheet.appendChild(delBtn);
+    }
+
+    const cb=btn("btn btn-p btn-full",isEdit?"✓ Modifier le score":"✓ Valider",()=>{
       const n=parseInt(val||"0");
       const score=neg?-n:n;
       upd(d=>{
         const s={...d.current};
-        const currentRound=s.round;
         s.players=s.players.map(p=>{
           if(p.id!==player.id)return p;
-          const scores=[...p.scores,{r:currentRound,v:score}];
+          const scores=p.scores.filter(sc=>sc.r!==currentRound);
+          scores.push({r:currentRound,v:score});
           return{...p,scores,total:scores.reduce((a,b)=>a+b.v,0)};
         });
         return{...d,current:s};
       });
       close();
     });
-    cb.style.marginTop="14px";
+    cb.style.marginTop=isEdit?"8px":"14px";
     sheet.appendChild(cb);
   });
 }
-
 // ── EDIT SCORE ──────────────────────────────────────────────
 function showEditScore(player,round,existingVal,onDone){
   let val=existingVal!==undefined?String(Math.abs(existingVal)):"";
