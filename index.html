@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="ScoreKeeper"/>
+<meta name="theme-color" content="#0f0f1a"/>
+<title>ScoreKeeper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a14;
+    --surface: #12121f;
+    --surface2: #1a1a2e;
+    --border: rgba(255,255,255,0.08);
+    --accent: #e8ff6b;
+    --accent2: #6b8eff;
+    --accent3: #ff6b9d;
+    --text: #f0f0f8;
+    --text-muted: rgba(240,240,248,0.45);
+    --text-dim: rgba(240,240,248,0.25);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body, #root { width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; overflow: hidden; }
+  
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 99px; }
+
+  @keyframes fadeUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+  @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.1)} 100%{transform:scale(1)} }
+  @keyframes glow { 0%,100%{box-shadow:0 0 20px rgba(232,255,107,0.2)} 50%{box-shadow:0 0 40px rgba(232,255,107,0.4)} }
+  @keyframes slideIn { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+  @keyframes slideUp { from{transform:translateY(100%);opacity:0} to{transform:translateY(0);opacity:1} }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+  @keyframes confetti { 0%{transform:translateY(-10px) rotate(0deg);opacity:1} 100%{transform:translateY(100vh) rotate(720deg);opacity:0} }
+  @keyframes rankChange { 0%{background:rgba(232,255,107,0.3)} 100%{background:transparent} }
+  
+  .app { width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+  
+  /* NAV */
+  .bottom-nav {
+    flex-shrink: 0;
+    display: flex;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 8px 0 calc(8px + var(--safe-bottom));
+  }
+  .nav-btn {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 8px 4px; background: none; border: none; color: var(--text-muted);
+    font-family: 'Outfit',sans-serif; font-size: 10px; font-weight: 500;
+    cursor: pointer; transition: color 0.2s; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .nav-btn.active { color: var(--accent); }
+  .nav-btn svg { width:22px; height:22px; stroke-width: 1.8; }
+  .nav-dot { width: 5px; height: 5px; border-radius: 99px; background: var(--accent); margin-top: 2px; opacity: 0; transition: opacity 0.2s; }
+  .nav-btn.active .nav-dot { opacity: 1; }
+  
+  /* PAGES */
+  .page { flex: 1; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  .page-inner { padding: 0 16px calc(16px + var(--safe-bottom)); min-height: 100%; }
+  
+  /* HEADER */
+  .page-header { padding: calc(var(--safe-top) + 20px) 0 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; background: var(--bg); }
+  .page-title { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.03em; }
+  .page-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  
+  /* CARDS */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; transition: transform 0.15s, box-shadow 0.15s; }
+  .card:active { transform: scale(0.99); }
+  .card-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 12px; }
+  
+  /* BUTTONS */
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    border: none; border-radius: var(--radius-sm); cursor: pointer;
+    font-family: 'Outfit',sans-serif; font-weight: 600; transition: all 0.15s;
+    padding: 14px 20px; font-size: 15px;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--accent); color: #0a0a14; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-danger { background: rgba(255,107,107,0.15); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.2); }
+  .btn-ghost { background: none; color: var(--text-muted); }
+  .btn-sm { padding: 8px 14px; font-size: 13px; }
+  .btn-full { width: 100%; }
+  .btn-icon { padding: 10px; width: 40px; height: 40px; border-radius: 10px; }
+  
+  /* INPUTS */
+  .input {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text); font-family: 'Outfit',sans-serif;
+    font-size: 16px; padding: 14px 16px; transition: border-color 0.2s;
+    -webkit-appearance: none; appearance: none;
+  }
+  .input:focus { outline: none; border-color: var(--accent2); }
+  .input::placeholder { color: var(--text-dim); }
+  .label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; display: block; }
+  .form-group { margin-bottom: 16px; }
+  
+  /* CHIPS */
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 99px;
+    font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .chip.selected { background: rgba(232,255,107,0.15); border-color: var(--accent); color: var(--accent); }
+  .chip:active { transform: scale(0.96); }
+  .chip-remove { width: 16px; height: 16px; border-radius: 99px; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 10px; }
+  
+  /* SCORE DISPLAY */
+  .score-value { font-family: 'DM Mono', monospace; font-size: 36px; font-weight: 400; color: var(--accent); }
+  .score-value.big { font-size: 52px; }
+  
+  /* RANKING */
+  .rank-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    margin-bottom: 8px; transition: all 0.3s;
+  }
+  .rank-item.first { border-color: rgba(255,215,0,0.3); background: rgba(255,215,0,0.05); }
+  .rank-item.second { border-color: rgba(192,192,192,0.3); background: rgba(192,192,192,0.05); }
+  .rank-item.third { border-color: rgba(205,127,50,0.3); background: rgba(205,127,50,0.05); }
+  .rank-badge { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'DM Mono',monospace; font-size: 14px; font-weight: 500; flex-shrink: 0; }
+  .rank-1 { background: rgba(255,215,0,0.2); color: #FFD700; }
+  .rank-2 { background: rgba(192,192,192,0.2); color: #C0C0C0; }
+  .rank-3 { background: rgba(205,127,50,0.2); color: #CD7F32; }
+  .rank-n { background: var(--surface2); color: var(--text-muted); }
+  .rank-name { flex: 1; font-weight: 600; font-size: 15px; }
+  .rank-score { font-family: 'DM Mono',monospace; font-size: 20px; font-weight: 500; }
+  
+  /* SCORE INPUT ROW */
+  .score-row {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+  }
+  .score-row.active-player { border-color: var(--accent2); animation: glow 2s ease-in-out infinite; }
+  .score-row-name { flex: 1; font-weight: 600; font-size: 15px; }
+  .score-row-total { font-family: 'DM Mono',monospace; font-size: 22px; min-width: 60px; text-align: right; }
+  .score-stepper { display: flex; align-items: center; gap: 8px; }
+  .stepper-btn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; }
+  .stepper-btn:active { transform: scale(0.9); background: var(--accent); color: #0a0a14; border-color: var(--accent); }
+  .round-input { width: 52px; height: 36px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'DM Mono',monospace; font-size: 16px; text-align: center; }
+  .round-input:focus { outline: none; border-color: var(--accent2); }
+  
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; align-items: flex-end; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+  .modal-sheet { background: var(--surface); border-radius: 24px 24px 0 0; padding: 24px 20px calc(24px + var(--safe-bottom)); width: 100%; max-height: 80vh; overflow-y: auto; animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1); -webkit-overflow-scrolling: touch; }
+  .modal-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 99px; margin: 0 auto 20px; }
+  .modal-title { font-family: 'Syne',sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 20px; }
+  
+  /* AVATAR */
+  .avatar { width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  
+  /* BADGE */
+  .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+  .badge-accent { background: rgba(232,255,107,0.15); color: var(--accent); border: 1px solid rgba(232,255,107,0.2); }
+  .badge-blue { background: rgba(107,142,255,0.15); color: var(--accent2); border: 1px solid rgba(107,142,255,0.2); }
+  .badge-pink { background: rgba(255,107,157,0.15); color: var(--accent3); border: 1px solid rgba(255,107,157,0.2); }
+  
+  /* GAME STATUS */
+  .status-bar { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--surface2); border-radius: var(--radius-sm); margin-bottom: 16px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 99px; background: var(--accent); animation: pulse 2s ease-in-out infinite; }
+  
+  /* CONFETTI */
+  .confetti-piece { position: fixed; width: 10px; height: 10px; pointer-events: none; z-index: 200; animation: confetti 3s ease-in forwards; }
+  
+  /* DIVIDER */
+  .divider { height: 1px; background: var(--border); margin: 16px 0; }
+  
+  /* EMPTY STATE */
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; gap: 12px; }
+  .empty-icon { font-size: 48px; margin-bottom: 8px; }
+  .empty-title { font-family: 'Syne',sans-serif; font-size: 20px; font-weight: 700; }
+  .empty-text { font-size: 14px; color: var(--text-muted); max-width: 260px; line-height: 1.6; }
+  
+  /* SECTIONS */
+  .section-label { font-family: 'Syne',sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 10px; margin-top: 20px; }
+  
+  /* STAT CARD */
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+  .stat-val { font-family: 'DM Mono',monospace; font-size: 28px; color: var(--accent); }
+  .stat-lbl { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  
+  /* HISTORY ITEM */
+  .history-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.15s; }
+  .history-item:active { border-color: var(--accent2); }
+  .history-game-name { font-family: 'Syne',sans-serif; font-size: 16px; font-weight: 700; }
+  .history-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .history-winner { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  
+  /* ROUND INDICATOR */
+  .round-pill { display: inline-flex; align-items: center; gap: 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: 99px; padding: 6px 14px; font-size: 13px; font-weight: 600; }
+  
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  
+  /* NUMPAD */
+  .numpad { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 16px; }
+  .numpad-btn { height: 60px; border-radius: 14px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 22px; font-family: 'DM Mono',monospace; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.12s; }
+  .numpad-btn:active { background: var(--accent); color: #0a0a14; border-color: var(--accent); transform: scale(0.96); }
+  .numpad-display { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; font-family: 'DM Mono',monospace; font-size: 36px; margin-bottom: 4px; min-height: 72px; display: flex; align-items: center; justify-content: center; }
+  
+  .fade-up { animation: fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) both; }
+  .chips-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+  
+  /* iOS safe */
+  .page-header { padding-top: calc(max(var(--safe-top), 12px) + 12px); }
+  
+  /* Tabs in header */
+  .tab-bar { display: flex; gap: 4px; background: var(--surface2); border-radius: 12px; padding: 4px; margin-bottom: 16px; }
+  .tab { flex: 1; padding: 8px; text-align: center; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; color: var(--text-muted); }
+  .tab.active { background: var(--surface); color: var(--text); }
+  
+  /* AVATAR COLORS */
+  .av-0 { background: rgba(232,255,107,0.15); }
+  .av-1 { background: rgba(107,142,255,0.15); }
+  .av-2 { background: rgba(255,107,157,0.15); }
+  .av-3 { background: rgba(107,255,200,0.15); }
+  .av-4 { background: rgba(255,179,107,0.15); }
+  .av-5 { background: rgba(200,107,255,0.15); }
+  
+  select.input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='rgba(240,240,248,0.45)' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  
+  @media (orientation: landscape) {
+    .landscape-flex { display: flex; gap: 16px; }
+    .landscape-flex > * { flex: 1; }
+    .landscape-score-list { flex: 1.2; }
+    .landscape-rank { flex: 0.8; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+// ─── DATA STORE ───
+const STORAGE_KEY = 'scorekeeper_v2';
+
+const EMOJI_AVATARS = ['🦊','🐼','🦁','🐸','🐙','🦋','🐺','🦄','🐯','🦅','🐬','🌟','🔥','⚡','🎮'];
+const PLAYER_COLORS = ['av-0','av-1','av-2','av-3','av-4','av-5'];
+
+const defaultData = {
+  games: ['Belote', 'UNO', 'Rummy', '8 américain', 'Scrabble', 'Poker', '421', 'Yams', 'Cluedo', 'Trivial Pursuit'],
+  players: [
+    { id: 'p1', name: 'Alice', emoji: '🦊', color: 'av-0' },
+    { id: 'p2', name: 'Bob', emoji: '🐼', color: 'av-1' },
+    { id: 'p3', name: 'Charlie', emoji: '🦁', color: 'av-2' },
+  ],
+  sessions: [],
+  currentSession: null,
+};
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return { ...defaultData, ...JSON.parse(raw) };
+  } catch {}
+  return defaultData;
+}
+
+function saveData(data) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {}
+}
+
+// ─── UTILS ───
+function today() {
+  const d = new Date();
+  return d.toISOString().split('T')[0];
+}
+
+function fmt(d) {
+  if (!d) return '';
+  const [y,m,day] = d.split('-');
+  return `${day}/${m}/${y}`;
+}
+
+function avatarClass(player) {
+  return `avatar ${player.color || 'av-0'}`;
+}
+
+function rankStyle(i) {
+  if (i === 0) return 'rank-item first';
+  if (i === 1) return 'rank-item second';
+  if (i === 2) return 'rank-item third';
+  return 'rank-item';
+}
+
+function rankBadgeClass(i) {
+  if (i === 0) return 'rank-badge rank-1';
+  if (i === 1) return 'rank-badge rank-2';
+  if (i === 2) return 'rank-badge rank-3';
+  return 'rank-badge rank-n';
+}
+
+function rankLabel(i) {
+  if (i === 0) return '🥇';
+  if (i === 1) return '🥈';
+  if (i === 2) return '🥉';
+  return `#${i+1}`;
+}
+
+function genId() { return Math.random().toString(36).slice(2); }
+
+// ─── MAIN APP ───
+function App() {
+  const [data, setData] = useState(loadData);
+  const [tab, setTab] = useState('home');
+  const [confetti, setConfetti] = useState(false);
+
+  const update = useCallback((fn) => {
+    setData(prev => {
+      const next = fn(prev);
+      saveData(next);
+      return next;
+    });
+  }, []);
+
+  const showConfetti = () => {
+    setConfetti(true);
+    setTimeout(() => setConfetti(false), 3500);
+  };
+
+  const hasActiveSession = !!data.currentSession;
+
+  return (
+    <div className="app">
+      {confetti && <Confetti />}
+      {tab === 'home' && <HomePage data={data} update={update} setTab={setTab} />}
+      {tab === 'game' && <GamePage data={data} update={update} setTab={setTab} showConfetti={showConfetti} />}
+      {tab === 'history' && <HistoryPage data={data} update={update} setTab={setTab} />}
+      {tab === 'stats' && <StatsPage data={data} />}
+      {tab === 'settings' && <SettingsPage data={data} update={update} />}
+      <BottomNav tab={tab} setTab={setTab} hasActiveSession={hasActiveSession} />
+    </div>
+  );
+}
+
+// ─── BOTTOM NAV ───
+function BottomNav({ tab, setTab, hasActiveSession }) {
+  const items = [
+    { id: 'home', label: 'Accueil', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
+    { id: 'game', label: hasActiveSession ? '● Partie' : 'Partie', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> },
+    { id: 'history', label: 'Historique', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> },
+    { id: 'stats', label: 'Stats', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
+    { id: 'settings', label: 'Réglages', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> },
+  ];
+  return (
+    <nav className="bottom-nav">
+      {items.map(item => (
+        <button key={item.id} className={`nav-btn ${tab === item.id ? 'active' : ''}`} onClick={() => setTab(item.id)}>
+          {item.icon}
+          <span>{item.label}</span>
+          <div className="nav-dot" />
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+// ─── HOME PAGE ───
+function HomePage({ data, update, setTab }) {
+  const [gameName, setGameName] = useState('');
+  const [date, setDate] = useState(today());
+  const [selectedPlayers, setSelectedPlayers] = useState([]);
+  const [showPlayerPicker, setShowPlayerPicker] = useState(false);
+  const [showGamePicker, setShowGamePicker] = useState(false);
+
+  const togglePlayer = (p) => {
+    setSelectedPlayers(prev =>
+      prev.find(x => x.id === p.id) ? prev.filter(x => x.id !== p.id) : [...prev, p]
+    );
+  };
+
+  const startGame = () => {
+    if (!gameName || selectedPlayers.length < 1) return;
+    const session = {
+      id: genId(),
+      gameName,
+      date,
+      startedAt: Date.now(),
+      finishedAt: null,
+      players: selectedPlayers.map(p => ({ ...p, scores: [], total: 0 })),
+      round: 1,
+    };
+    update(d => ({ ...d, currentSession: session }));
+    setTab('game');
+  };
+
+  const hasActive = !!data.currentSession;
+
+  return (
+    <div className="page">
+      <div className="page-inner">
+        <div className="page-header">
+          <div>
+            <div className="page-title">ScoreKeeper</div>
+            <div className="page-subtitle">Nouvelle partie</div>
+          </div>
+          <div style={{fontSize:28}}>🎲</div>
+        </div>
+
+        {hasActive && (
+          <div style={{background:'rgba(107,142,255,0.1)',border:'1px solid rgba(107,142,255,0.3)',borderRadius:14,padding:'14px 16px',marginBottom:16,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+            <div>
+              <div style={{fontWeight:700,fontSize:14}}>Partie en cours</div>
+              <div style={{fontSize:12,color:'var(--text-muted)',marginTop:2}}>{data.currentSession.gameName} · {fmt(data.currentSession.date)}</div>
+            </div>
+            <button className="btn btn-secondary btn-sm" onClick={() => setTab('game')}>Reprendre →</button>
+          </div>
+        )}
+
+        <div className="card fade-up">
+          <div className="form-group">
+            <label className="label">Jeu</label>
+            <div style={{display:'flex',gap:8}}>
+              <div style={{flex:1,background:'var(--surface2)',border:'1px solid var(--border)',borderRadius:10,padding:'14px 16px',fontSize:15,cursor:'pointer',color:gameName?'var(--text)':'var(--text-dim)'}} onClick={() => setShowGamePicker(true)}>
+                {gameName || 'Choisir un jeu…'}
+              </div>
+              {gameName && <button className="btn btn-ghost btn-icon" onClick={() => setGameName('')}>✕</button>}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="label">Date</label>
+            <input type="date" className="input" value={date} onChange={e => setDate(e.target.value)} />
+          </div>
+        </div>
+
+        <div className="card fade-up">
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+            <div className="card-title" style={{margin:0}}>Joueurs</div>
+            <button className="btn btn-secondary btn-sm" onClick={() => setShowPlayerPicker(true)}>+ Ajouter</button>
+          </div>
+          {selectedPlayers.length === 0 ? (
+            <div style={{padding:'20px 0',textAlign:'center',color:'var(--text-muted)',fontSize:14}}>Aucun joueur sélectionné</div>
+          ) : (
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              {selectedPlayers.map(p => (
+                <div key={p.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',background:'var(--surface2)',borderRadius:10}}>
+                  <div className={avatarClass(p)}>{p.emoji}</div>
+                  <span style={{flex:1,fontWeight:600}}>{p.name}</span>
+                  <button className="btn btn-ghost btn-icon" style={{width:28,height:28,padding:0,fontSize:12}} onClick={() => togglePlayer(p)}>✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <button className="btn btn-primary btn-full fade-up" style={{marginTop:8}} onClick={startGame} disabled={!gameName || selectedPlayers.length < 1}
+          style={{opacity: (!gameName || selectedPlayers.length < 1) ? 0.5 : 1, background:'var(--accent)', color:'#0a0a14', width:'100%', padding:'16px', borderRadius:14, fontSize:16, fontWeight:700, fontFamily:'Outfit,sans-serif', border:'none', cursor:'pointer', transition:'all 0.15s'}}>
+          🚀 Démarrer la partie
+        </button>
+      </div>
+
+      {showGamePicker && (
+        <GamePickerModal
+          games={data.games}
+          selected={gameName}
+          onSelect={g => { setGameName(g); setShowGamePicker(false); }}
+          onClose={() => setShowGamePicker(false)}
+        />
+      )}
+      {showPlayerPicker && (
+        <PlayerPickerModal
+          players={data.players}
+          selected={selectedPlayers}
+          onToggle={togglePlayer}
+          onClose={() => setShowPlayerPicker(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── GAME PICKER MODAL ───
+function GamePickerModal({ games, selected, onSelect, onClose }) {
+  const [search, setSearch] = useState('');
+  const filtered = games.filter(g => g.toLowerCase().includes(search.toLowerCase()));
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+        <div className="modal-handle" />
+        <div className="modal-title">Choisir un jeu</div>
+        <input className="input" placeholder="Rechercher…" value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom:16}} autoFocus />
+        <div style={{display:'flex',flexDirection:'column',gap:6}}>
+          {filtered.map(g => (
+            <button key={g} className="btn btn-secondary" style={{justifyContent:'flex-start',fontWeight: g===selected?700:500,borderColor: g===selected?'var(--accent)':'var(--border)'}} onClick={() => onSelect(g)}>
+              {g===selected?'✓ ':''}{g}
+            </button>
+          ))}
+          {search && !games.includes(search) && (
+            <button className="btn btn-secondary" style={{justifyContent:'flex-start',borderStyle:'dashed'}} onClick={() => onSelect(search)}>
+              + Utiliser "{search}"
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── PLAYER PICKER MODAL ───
+function PlayerPickerModal({ players, selected, onToggle, onClose }) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+        <div className="modal-handle" />
+        <div className="modal-title">Sélectionner les joueurs</div>
+        <div style={{display:'flex',flexDirection:'column',gap:8}}>
+          {players.map(p => {
+            const isSel = selected.find(x => x.id === p.id);
+            return (
+              <div key={p.id} onClick={() => onToggle(p)} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',background:isSel?'rgba(232,255,107,0.08)':'var(--surface2)',border:`1px solid ${isSel?'var(--accent)':'var(--border)'}`,borderRadius:12,cursor:'pointer',transition:'all 0.15s'}}>
+                <div className={avatarClass(p)}>{p.emoji}</div>
+                <span style={{flex:1,fontWeight:600,fontSize:15}}>{p.name}</span>
+                <div style={{width:24,height:24,borderRadius:8,border:`2px solid ${isSel?'var(--accent)':'var(--border)'}`,background:isSel?'var(--accent)':'transparent',display:'flex',alignItems:'center',justifyContent:'center',color:'#0a0a14',fontSize:14,fontWeight:700,transition:'all 0.15s'}}>
+                  {isSel && '✓'}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <button className="btn btn-primary btn-full" style={{marginTop:20}} onClick={onClose}>Confirmer</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── GAME PAGE ───
+function GamePage({ data, update, setTab, showConfetti }) {
+  const [activeTab, setActiveTab] = useState('scores');
+  const [numpadPlayer, setNumpadPlayer] = useState(null);
+  const [showEndModal, setShowEndModal] = useState(false);
+
+  const session = data.currentSession;
+
+  if (!session) {
+    return (
+      <div className="page">
+        <div className="page-inner">
+          <div className="page-header"><div className="page-title">Partie</div></div>
+          <div className="empty-state">
+            <div className="empty-icon">🎮</div>
+            <div className="empty-title">Aucune partie active</div>
+            <div className="empty-text">Créez une nouvelle partie depuis l'accueil pour commencer.</div>
+            <button className="btn btn-primary" style={{marginTop:16}} onClick={() => setTab('home')}>→ Accueil</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const sorted = [...session.players].sort((a,b) => b.total - a.total);
+
+  const addScore = (playerId, val) => {
+    if (isNaN(val)) return;
+    update(d => {
+      const s = { ...d.currentSession };
+      s.players = s.players.map(p => {
+        if (p.id !== playerId) return p;
+        const scores = [...p.scores, val];
+        return { ...p, scores, total: scores.reduce((a,b) => a+b, 0) };
+      });
+      return { ...d, currentSession: s };
+    });
+  };
+
+  const nextRound = () => {
+    update(d => ({ ...d, currentSession: { ...d.currentSession, round: d.currentSession.round + 1 } }));
+  };
+
+  const endGame = () => {
+    const finished = { ...session, finishedAt: Date.now() };
+    update(d => ({
+      ...d,
+      currentSession: null,
+      sessions: [...d.sessions, finished],
+    }));
+    showConfetti();
+    setShowEndModal(false);
+    setTab('history');
+  };
+
+  return (
+    <div className="page">
+      <div className="page-inner">
+        <div className="page-header">
+          <div>
+            <div className="page-title">{session.gameName}</div>
+            <div className="page-subtitle">{fmt(session.date)} · {session.players.length} joueurs</div>
+          </div>
+          <div style={{display:'flex',gap:8,alignItems:'center'}}>
+            <div className="round-pill">🎯 Manche {session.round}</div>
+          </div>
+        </div>
+
+        <div className="tab-bar">
+          <div className={`tab ${activeTab==='scores'?'active':''}`} onClick={() => setActiveTab('scores')}>Scores</div>
+          <div className={`tab ${activeTab==='rank'?'active':''}`} onClick={() => setActiveTab('rank')}>Classement</div>
+          <div className={`tab ${activeTab==='history'?'active':''}`} onClick={() => setActiveTab('history')}>Détail</div>
+        </div>
+
+        {activeTab === 'scores' && (
+          <div>
+            <div className="status-bar">
+              <div className="status-dot" />
+              <span style={{fontSize:13,fontWeight:600}}>Partie en cours</span>
+              <span style={{marginLeft:'auto',fontSize:12,color:'var(--text-muted)'}}>Toucher pour saisir</span>
+            </div>
+            {session.players.map(p => (
+              <div key={p.id} className="score-row" onClick={() => setNumpadPlayer(p)}>
+                <div className={avatarClass(p)}>{p.emoji}</div>
+                <div className="score-row-name">{p.name}</div>
+                <div style={{color:'var(--text-muted)',fontSize:12,marginRight:8}}>{p.scores.length} manches</div>
+                <div className="score-row-total" style={{color: p.total > 0 ? 'var(--accent)' : p.total < 0 ? '#ff6b6b' : 'var(--text)'}}>{p.total}</div>
+                <div style={{marginLeft:8,fontSize:18,color:'var(--text-muted)'}}>›</div>
+              </div>
+            ))}
+            <div style={{display:'flex',gap:10,marginTop:16}}>
+              <button className="btn btn-secondary" style={{flex:1}} onClick={nextRound}>+ Manche {session.round+1}</button>
+              <button className="btn btn-danger" style={{flex:1}} onClick={() => setShowEndModal(true)}>Terminer 🏁</button>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'rank' && (
+          <div>
+            {sorted.map((p,i) => (
+              <div key={p.id} className={rankStyle(i)} style={{animationDelay:`${i*0.05}s`}}>
+                <div className={rankBadgeClass(i)}>{rankLabel(i)}</div>
+                <div className={avatarClass(p)}>{p.emoji}</div>
+                <div className="rank-name">{p.name}</div>
+                <div className="rank-score" style={{color: p.total>=0?'var(--accent)':'#ff6b6b'}}>{p.total}</div>
+              </div>
+            ))}
+            {sorted.length > 1 && (
+              <div className="card" style={{marginTop:16}}>
+                <div className="card-title">Écart</div>
+                <div style={{fontSize:13,color:'var(--text-muted)'}}>
+                  {sorted[0].name} mène avec <span style={{color:'var(--accent)',fontWeight:700}}>{sorted[0].total - sorted[1].total} pts</span> d'avance sur {sorted[1].name}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'history' && (
+          <div>
+            <div className="card">
+              <div className="card-title">Détail par manche</div>
+              <div style={{overflowX:'auto'}}>
+                <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
+                  <thead>
+                    <tr>
+                      <th style={{textAlign:'left',padding:'6px 8px',color:'var(--text-muted)',fontWeight:600}}>Joueur</th>
+                      {Array.from({length: Math.max(...session.players.map(p=>p.scores.length),1)}, (_,i) => (
+                        <th key={i} style={{textAlign:'center',padding:'6px 8px',color:'var(--text-muted)',fontWeight:600,minWidth:40}}>M{i+1}</th>
+                      ))}
+                      <th style={{textAlign:'right',padding:'6px 8px',color:'var(--accent)',fontWeight:700}}>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {session.players.map(p => (
+                      <tr key={p.id} style={{borderTop:'1px solid var(--border)'}}>
+                        <td style={{padding:'10px 8px',fontWeight:600}}>{p.emoji} {p.name}</td>
+                        {p.scores.map((s,i) => (
+                          <td key={i} style={{textAlign:'center',padding:'10px 8px',fontFamily:'DM Mono,monospace',color: s>=0?'var(--text)':'#ff6b6b'}}>{s>0?'+':''}{s}</td>
+                        ))}
+                        {Array.from({length: Math.max(...session.players.map(x=>x.scores.length)) - p.scores.length}, (_,i) => (
+                          <td key={`e${i}`} style={{textAlign:'center',color:'var(--text-dim)'}}>—</td>
+                        ))}
+                        <td style={{textAlign:'right',padding:'10px 8px',fontFamily:'DM Mono,monospace',fontWeight:700,color: p.total>=0?'var(--accent)':'#ff6b6b'}}>{p.total}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {numpadPlayer && (
+        <NumpadModal
+          player={numpadPlayer}
+          onConfirm={val => { addScore(numpadPlayer.id, val); setNumpadPlayer(null); }}
+          onClose={() => setNumpadPlayer(null)}
+        />
+      )}
+
+      {showEndModal && (
+        <div className="modal-overlay" onClick={() => setShowEndModal(false)}>
+          <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+            <div className="modal-handle" />
+            <div className="modal-title">🏁 Terminer la partie ?</div>
+            <div style={{color:'var(--text-muted)',fontSize:14,marginBottom:20,lineHeight:1.6}}>
+              La partie sera archivée dans l'historique. Le gagnant est <strong style={{color:'var(--accent)'}}>{sorted[0]?.name}</strong> avec <strong>{sorted[0]?.total} pts</strong>.
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:10}}>
+              <button className="btn btn-primary btn-full" onClick={endGame}>Confirmer et terminer 🎉</button>
+              <button className="btn btn-secondary btn-full" onClick={() => setShowEndModal(false)}>Continuer la partie</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── NUMPAD MODAL ───
+function NumpadModal({ player, onConfirm, onClose }) {
+  const [val, setVal] = useState('');
+  const [negative, setNegative] = useState(false);
+
+  const press = (k) => {
+    if (k === 'del') { setVal(v => v.slice(0,-1)); return; }
+    if (k === '±') { setNegative(n => !n); return; }
+    if (val.length >= 5) return;
+    setVal(v => v + k);
+  };
+
+  const confirm = () => {
+    const n = parseInt(val || '0');
+    onConfirm(negative ? -n : n);
+  };
+
+  const display = val === '' ? '0' : (negative ? '-' : '+') + val;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+        <div className="modal-handle" />
+        <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:20}}>
+          <div className={avatarClass(player)}>{player.emoji}</div>
+          <div className="modal-title" style={{marginBottom:0}}>{player.name}</div>
+          <div style={{marginLeft:'auto',fontSize:13,color:'var(--text-muted)'}}>Total: {player.total}</div>
+        </div>
+
+        <div className="numpad-display" style={{color: negative?'#ff6b6b':'var(--accent)',fontSize:48,fontFamily:'DM Mono,monospace'}}>
+          {display}
+        </div>
+        <div style={{textAlign:'center',fontSize:12,color:'var(--text-muted)',marginBottom:8}}>points pour cette manche</div>
+
+        <div className="numpad">
+          {['1','2','3','4','5','6','7','8','9','±','0','del'].map(k => (
+            <button key={k} className="numpad-btn" onClick={() => press(k)}>
+              {k === 'del' ? '⌫' : k}
+            </button>
+          ))}
+        </div>
+
+        <button className="btn btn-primary btn-full" style={{marginTop:16}} onClick={confirm}>
+          Valider {display} pts
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── HISTORY PAGE ───
+function HistoryPage({ data, update, setTab }) {
+  const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState(null);
+
+  const sessions = [...data.sessions].reverse();
+  const filtered = sessions.filter(s => s.gameName.toLowerCase().includes(search.toLowerCase()));
+
+  const grouped = {};
+  filtered.forEach(s => {
+    if (!grouped[s.gameName]) grouped[s.gameName] = [];
+    grouped[s.gameName].push(s);
+  });
+
+  const winner = (s) => {
+    if (!s.players || s.players.length === 0) return null;
+    return [...s.players].sort((a,b) => b.total-a.total)[0];
+  };
+
+  const deleteSession = (id) => {
+    update(d => ({ ...d, sessions: d.sessions.filter(s => s.id !== id) }));
+    setSelected(null);
+  };
+
+  const shareSession = (s) => {
+    const sorted = [...s.players].sort((a,b) => b.total-a.total);
+    const text = `🏆 ${s.gameName} — ${fmt(s.date)}\n\n` + sorted.map((p,i) => `${rankLabel(i)} ${p.name}: ${p.total} pts`).join('\n');
+    if (navigator.share) {
+      navigator.share({ title: `${s.gameName} — Résultats`, text });
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      alert('Résultats copiés !');
+    }
+  };
+
+  if (selected) {
+    const s = selected;
+    const sorted = [...s.players].sort((a,b) => b.total-a.total);
+    return (
+      <div className="page">
+        <div className="page-inner">
+          <div className="page-header">
+            <button className="btn btn-ghost" style={{padding:'8px 0',gap:6}} onClick={() => setSelected(null)}>
+              ← Retour
+            </button>
+            <div style={{display:'flex',gap:8}}>
+              <button className="btn btn-secondary btn-sm" onClick={() => shareSession(s)}>Partager 📤</button>
+              <button className="btn btn-danger btn-sm" onClick={() => deleteSession(s.id)}>🗑</button>
+            </div>
+          </div>
+
+          <div style={{marginBottom:20}}>
+            <div style={{fontFamily:'Syne,sans-serif',fontSize:26,fontWeight:800}}>{s.gameName}</div>
+            <div style={{fontSize:13,color:'var(--text-muted)',marginTop:4}}>{fmt(s.date)} · {s.players.length} joueurs</div>
+          </div>
+
+          <div className="section-label">Classement final</div>
+          {sorted.map((p,i) => (
+            <div key={p.id} className={rankStyle(i)}>
+              <div className={rankBadgeClass(i)}>{rankLabel(i)}</div>
+              <div className={avatarClass(p)}>{p.emoji}</div>
+              <div className="rank-name">{p.name}</div>
+              <div className="rank-score" style={{color: p.total>=0?'var(--accent)':'#ff6b6b'}}>{p.total}</div>
+            </div>
+          ))}
+
+          <div className="section-label" style={{marginTop:20}}>Détail des manches</div>
+          <div className="card">
+            <div style={{overflowX:'auto'}}>
+              <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
+                <thead>
+                  <tr>
+                    <th style={{textAlign:'left',padding:'6px 8px',color:'var(--text-muted)',fontWeight:600}}>Joueur</th>
+                    {Array.from({length: Math.max(...s.players.map(p=>p.scores.length),1)}, (_,i) => (
+                      <th key={i} style={{textAlign:'center',padding:'6px 8px',color:'var(--text-muted)',fontWeight:600,minWidth:40}}>M{i+1}</th>
+                    ))}
+                    <th style={{textAlign:'right',padding:'6px 8px',color:'var(--accent)',fontWeight:700}}>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {s.players.map(p => (
+                    <tr key={p.id} style={{borderTop:'1px solid var(--border)'}}>
+                      <td style={{padding:'10px 8px',fontWeight:600}}>{p.emoji} {p.name}</td>
+                      {p.scores.map((sc,i) => (
+                        <td key={i} style={{textAlign:'center',padding:'10px 8px',fontFamily:'DM Mono,monospace',color: sc>=0?'var(--text)':'#ff6b6b'}}>{sc>0?'+':''}{sc}</td>
+                      ))}
+                      {Array.from({length: Math.max(...s.players.map(x=>x.scores.length)) - p.scores.length}, (_,i) => (
+                        <td key={`e${i}`} style={{textAlign:'center',color:'var(--text-dim)'}}>—</td>
+                      ))}
+                      <td style={{textAlign:'right',padding:'10px 8px',fontFamily:'DM Mono,monospace',fontWeight:700,color: p.total>=0?'var(--accent)':'#ff6b6b'}}>{p.total}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page">
+      <div className="page-inner">
+        <div className="page-header">
+          <div>
+            <div className="page-title">Historique</div>
+            <div className="page-subtitle">{data.sessions.length} parties jouées</div>
+          </div>
+        </div>
+
+        <input className="input" placeholder="🔍 Rechercher un jeu…" value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom:16}} />
+
+        {filtered.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">📜</div>
+            <div className="empty-title">Aucune partie</div>
+            <div className="empty-text">Les parties terminées apparaîtront ici, classées par jeu.</div>
+          </div>
+        ) : (
+          Object.entries(grouped).map(([game, sess]) => (
+            <div key={game} style={{marginBottom:20}}>
+              <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+                <div className="section-label" style={{margin:0}}>{game}</div>
+                <div className="badge badge-blue">{sess.length} partie{sess.length>1?'s':''}</div>
+              </div>
+              {sess.map(s => {
+                const w = winner(s);
+                return (
+                  <div key={s.id} className="history-item" onClick={() => setSelected(s)}>
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                      <div className="history-game-name">{s.gameName}</div>
+                      <div style={{fontSize:12,color:'var(--text-muted)'}}>{fmt(s.date)}</div>
+                    </div>
+                    <div className="history-meta">{s.players.length} joueurs · {Math.max(...s.players.map(p=>p.scores.length),0)} manches</div>
+                    {w && (
+                      <div className="history-winner">
+                        <span style={{fontSize:13,color:'var(--text-muted)'}}>Gagnant :</span>
+                        <div className={avatarClass(w)}>{w.emoji}</div>
+                        <span style={{fontWeight:700,fontSize:14}}>{w.name}</span>
+                        <span style={{marginLeft:'auto',fontFamily:'DM Mono,monospace',color:'var(--accent)',fontWeight:700}}>{w.total} pts</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── STATS PAGE ───
+function StatsPage({ data }) {
+  const [view, setView] = useState('games');
+  const sessions = data.sessions;
+
+  // Stats par jeu
+  const gameStats = useMemo(() => {
+    const map = {};
+    sessions.forEach(s => {
+      if (!map[s.gameName]) map[s.gameName] = { name: s.gameName, played: 0, players: {}, wins: {} };
+      const g = map[s.gameName];
+      g.played++;
+      const sorted = [...s.players].sort((a,b) => b.total-a.total);
+      sorted.forEach((p,i) => {
+        if (!g.players[p.name]) g.players[p.name] = { scores: [], wins: 0 };
+        g.players[p.name].scores.push(p.total);
+        if (i === 0) g.players[p.name].wins++;
+      });
+    });
+    return Object.values(map);
+  }, [sessions]);
+
+  // Stats par joueur
+  const playerStats = useMemo(() => {
+    const map = {};
+    data.players.forEach(p => { map[p.name] = { ...p, played: 0, wins: 0, totalScore: 0, gameWins: {} }; });
+    sessions.forEach(s => {
+      const sorted = [...s.players].sort((a,b) => b.total-a.total);
+      sorted.forEach((p,i) => {
+        if (!map[p.name]) map[p.name] = { ...p, played: 0, wins: 0, totalScore: 0, gameWins: {} };
+        const m = map[p.name];
+        m.played++;
+        m.totalScore += p.total;
+        if (i === 0) {
+          m.wins++;
+          m.gameWins[s.gameName] = (m.gameWins[s.gameName] || 0) + 1;
+        }
+      });
+    });
+    return Object.values(map).filter(p => p.played > 0).sort((a,b) => b.wins - a.wins);
+  }, [sessions, data.players]);
+
+  return (
+    <div className="page">
+      <div className="page-inner">
+        <div className="page-header">
+          <div>
+            <div className="page-title">Statistiques</div>
+            <div className="page-subtitle">{sessions.length} parties archivées</div>
+          </div>
+        </div>
+
+        {sessions.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">📊</div>
+            <div className="empty-title">Pas encore de stats</div>
+            <div className="empty-text">Jouez des parties pour voir vos statistiques ici.</div>
+          </div>
+        ) : (
+          <>
+            <div className="tab-bar">
+              <div className={`tab ${view==='games'?'active':''}`} onClick={() => setView('games')}>Par jeu</div>
+              <div className={`tab ${view==='players'?'active':''}`} onClick={() => setView('players')}>Par joueur</div>
+            </div>
+
+            {view === 'games' && (
+              <div>
+                {gameStats.map(g => {
+                  const bestPlayer = Object.entries(g.players).sort((a,b) => b[1].wins - a[1].wins)[0];
+                  const avgScore = Object.entries(g.players).map(([n,p]) => ({name:n, avg: p.scores.reduce((a,b)=>a+b,0)/p.scores.length})).sort((a,b) => b.avg-a.avg);
+                  return (
+                    <div key={g.name} className="card" style={{marginBottom:12}}>
+                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+                        <div style={{fontFamily:'Syne,sans-serif',fontSize:18,fontWeight:700}}>{g.name}</div>
+                        <div className="badge badge-accent">{g.played} partie{g.played>1?'s':''}</div>
+                      </div>
+                      {bestPlayer && (
+                        <div style={{background:'rgba(232,255,107,0.08)',border:'1px solid rgba(232,255,107,0.15)',borderRadius:10,padding:'10px 14px',marginBottom:12}}>
+                          <div style={{fontSize:11,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:4}}>Meilleur joueur</div>
+                          <div style={{fontWeight:700,fontSize:15}}>🏆 {bestPlayer[0]} — {bestPlayer[1].wins} victoire{bestPlayer[1].wins>1?'s':''}</div>
+                        </div>
+                      )}
+                      <div style={{fontSize:12,color:'var(--text-muted)',marginBottom:8,textTransform:'uppercase',letterSpacing:'0.08em'}}>Score moyen</div>
+                      {avgScore.map(({name,avg},i) => (
+                        <div key={name} style={{display:'flex',alignItems:'center',gap:10,marginBottom:6}}>
+                          <div style={{width:20,fontSize:12,color:'var(--text-muted)'}}>{i+1}.</div>
+                          <div style={{flex:1,fontSize:14,fontWeight:500}}>{name}</div>
+                          <div style={{fontFamily:'DM Mono,monospace',fontSize:14,color: avg>=0?'var(--accent)':'#ff6b6b'}}>{avg.toFixed(1)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {view === 'players' && (
+              <div>
+                {playerStats.map((p,i) => {
+                  const winRate = p.played > 0 ? Math.round(p.wins/p.played*100) : 0;
+                  const favGame = Object.entries(p.gameWins).sort((a,b) => b[1]-a[1])[0];
+                  return (
+                    <div key={p.name} className="card">
+                      <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:14}}>
+                        {p.emoji ? <div className={avatarClass(p)} style={{width:44,height:44,fontSize:22,borderRadius:14}}>{p.emoji}</div> : null}
+                        <div>
+                          <div style={{fontFamily:'Syne,sans-serif',fontSize:18,fontWeight:700}}>{p.name}</div>
+                          <div style={{fontSize:12,color:'var(--text-muted)'}}>{p.played} parties jouées</div>
+                        </div>
+                        {i === 0 && <div className="badge badge-accent" style={{marginLeft:'auto'}}>Top joueur</div>}
+                      </div>
+                      <div className="grid-3" style={{marginBottom:12}}>
+                        <div className="stat-card">
+                          <div className="stat-val">{p.wins}</div>
+                          <div className="stat-lbl">Victoires</div>
+                        </div>
+                        <div className="stat-card">
+                          <div className="stat-val">{winRate}%</div>
+                          <div className="stat-lbl">Win rate</div>
+                        </div>
+                        <div className="stat-card">
+                          <div className="stat-val" style={{fontSize:20}}>{p.played > 0 ? Math.round(p.totalScore/p.played) : 0}</div>
+                          <div className="stat-lbl">Score moyen</div>
+                        </div>
+                      </div>
+                      {favGame && (
+                        <div style={{fontSize:13,color:'var(--text-muted)'}}>
+                          🎮 Meilleur à : <strong style={{color:'var(--text)'}}>{favGame[0]}</strong> ({favGame[1]} victoire{favGame[1]>1?'s':''})
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── SETTINGS PAGE ───
+function SettingsPage({ data, update }) {
+  const [newGame, setNewGame] = useState('');
+  const [newPlayerName, setNewPlayerName] = useState('');
+  const [newPlayerEmoji, setNewPlayerEmoji] = useState('🎮');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  const addGame = () => {
+    if (!newGame.trim() || data.games.includes(newGame.trim())) return;
+    update(d => ({ ...d, games: [...d.games, newGame.trim()] }));
+    setNewGame('');
+  };
+
+  const removeGame = (g) => update(d => ({ ...d, games: d.games.filter(x => x !== g) }));
+
+  const addPlayer = () => {
+    if (!newPlayerName.trim()) return;
+    const colors = ['av-0','av-1','av-2','av-3','av-4','av-5'];
+    const color = colors[data.players.length % colors.length];
+    update(d => ({ ...d, players: [...d.players, { id: genId(), name: newPlayerName.trim(), emoji: newPlayerEmoji, color }] }));
+    setNewPlayerName('');
+    setNewPlayerEmoji('🎮');
+  };
+
+  const removePlayer = (id) => update(d => ({ ...d, players: d.players.filter(p => p.id !== id) }));
+
+  return (
+    <div className="page">
+      <div className="page-inner">
+        <div className="page-header">
+          <div>
+            <div className="page-title">Réglages</div>
+            <div className="page-subtitle">Gérez vos listes</div>
+          </div>
+        </div>
+
+        {/* JOUEURS */}
+        <div className="section-label">Joueurs ({data.players.length})</div>
+        <div className="card">
+          <div style={{display:'flex',gap:8,marginBottom:12}}>
+            <button onClick={() => setShowEmojiPicker(true)} style={{width:50,height:50,borderRadius:12,border:'1px solid var(--border)',background:'var(--surface2)',fontSize:22,cursor:'pointer',flexShrink:0}}>{newPlayerEmoji}</button>
+            <input className="input" style={{flex:1}} placeholder="Nom du joueur…" value={newPlayerName} onChange={e => setNewPlayerName(e.target.value)} onKeyDown={e => e.key==='Enter'&&addPlayer()} />
+            <button className="btn btn-primary btn-sm" onClick={addPlayer} disabled={!newPlayerName.trim()}>+</button>
+          </div>
+          {data.players.map(p => (
+            <div key={p.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderTop:'1px solid var(--border)'}}>
+              <div className={avatarClass(p)}>{p.emoji}</div>
+              <span style={{flex:1,fontWeight:500}}>{p.name}</span>
+              <button className="btn btn-ghost btn-sm" style={{color:'#ff6b6b',padding:'6px 10px'}} onClick={() => removePlayer(p.id)}>✕</button>
+            </div>
+          ))}
+        </div>
+
+        {showEmojiPicker && (
+          <div className="modal-overlay" onClick={() => setShowEmojiPicker(false)}>
+            <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+              <div className="modal-handle" />
+              <div className="modal-title">Choisir un emoji</div>
+              <div style={{display:'flex',flexWrap:'wrap',gap:10}}>
+                {EMOJI_AVATARS.map(em => (
+                  <button key={em} onClick={() => { setNewPlayerEmoji(em); setShowEmojiPicker(false); }} style={{width:52,height:52,borderRadius:14,border:`2px solid ${em===newPlayerEmoji?'var(--accent)':'var(--border)'}`,background:'var(--surface2)',fontSize:24,cursor:'pointer'}}>
+                    {em}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* JEUX */}
+        <div className="section-label">Jeux ({data.games.length})</div>
+        <div className="card">
+          <div style={{display:'flex',gap:8,marginBottom:12}}>
+            <input className="input" style={{flex:1}} placeholder="Nom du jeu…" value={newGame} onChange={e => setNewGame(e.target.value)} onKeyDown={e => e.key==='Enter'&&addGame()} />
+            <button className="btn btn-primary btn-sm" onClick={addGame} disabled={!newGame.trim()}>+</button>
+          </div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
+            {data.games.map(g => (
+              <div key={g} className="chip">
+                {g}
+                <button onClick={() => removeGame(g)} style={{background:'none',border:'none',color:'var(--text-muted)',cursor:'pointer',padding:0,fontSize:12,lineHeight:1}}>✕</button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* RESET */}
+        <div className="section-label">Danger</div>
+        <button className="btn btn-danger btn-full" onClick={() => {
+          if (confirm('Effacer tout l\'historique ? Cette action est irréversible.')) {
+            update(d => ({ ...d, sessions: [], currentSession: null }));
+          }
+        }}>
+          🗑 Effacer l'historique
+        </button>
+
+        <div style={{height:20}} />
+      </div>
+    </div>
+  );
+}
+
+// ─── CONFETTI ───
+function Confetti() {
+  const pieces = useMemo(() => Array.from({length:40}, (_,i) => ({
+    id: i,
+    left: Math.random()*100,
+    delay: Math.random()*1.5,
+    color: ['#e8ff6b','#6b8eff','#ff6b9d','#6bffc8','#ffb36b'][Math.floor(Math.random()*5)],
+    size: 6+Math.random()*10,
+    shape: Math.random()>0.5 ? 'circle' : 'rect',
+  })), []);
+
+  return (
+    <>
+      {pieces.map(p => (
+        <div key={p.id} className="confetti-piece" style={{
+          left: `${p.left}%`, top: '-20px',
+          animationDelay: `${p.delay}s`,
+          background: p.color,
+          width: p.size, height: p.size,
+          borderRadius: p.shape==='circle'?'50%':'2px',
+        }} />
+      ))}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
