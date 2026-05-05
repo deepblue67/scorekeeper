@@ -983,53 +983,207 @@ function buildHistory(pg){
 }
 
 function buildHistDetail(wrap,s,back){
+  wrap.innerHTML="";
   const sorted=[...s.players].sort((a,b)=>b.total-a.total);
+
+  // Header
   const hdr=div("hdr");
-  const bb=btn("btn btn-g","← Retour",back);
+  const bb=btn("btn btn-g","← Retour",()=>{wrap.innerHTML="";back();});
   bb.style.padding="8px 0";
-  const acts=div("",`<div style="display:flex;gap:7px"></div>`);
-  const share=btn("btn btn-s btn-sm","Partager \ud83d\udce4",()=>{
-    const text="\ud83c\udfc6 "+s.gameName+" — "+fmtDate(s.date)+"\n\n"+sorted.map((p,i)=>rankBadge(i)+" "+p.name+": "+p.total+" pts").join("\n");
-    if(navigator.share)navigator.share({title:s.gameName,text});
-    else if(navigator.clipboard){navigator.clipboard.writeText(text);alert("Résultats copiés !");}
-  });
-  const del=btn("btn btn-d btn-sm","\ud83d\uddd1",()=>{
+  const acts=div("");
+  acts.style.cssText="display:flex;gap:7px";
+
+  // Share image button
+  const shareBtn=btn("btn btn-s btn-sm","📤 Partager",()=>shareAsImage(s,sorted));
+
+  const del=btn("btn btn-d btn-sm","🗑",()=>{
     if(confirm("Supprimer cette partie ?"))upd(d=>({...d,sessions:d.sessions.filter(x=>x.id!==s.id)}));
-    back();
+    wrap.innerHTML="";back();
   });
-  acts.firstChild.appendChild(share);acts.firstChild.appendChild(del);
-  hdr.appendChild(bb);hdr.appendChild(acts.firstChild);
+  acts.appendChild(shareBtn);acts.appendChild(del);
+  hdr.appendChild(bb);hdr.appendChild(acts);
   wrap.appendChild(hdr);
-  wrap.appendChild(div("",`<div style="margin-bottom:18px"><div style="font-size:24px;font-weight:800;letter-spacing:-.02em">${s.gameName}</div><div style="font-size:13px;color:var(--muted);margin-top:3px">${fmtDate(s.date)} · ${s.players.length} joueurs</div></div>`));
+
+  // Title
+  const title=div("");
+  title.style.cssText="margin-bottom:18px";
+  title.innerHTML=`<div style="font-size:24px;font-weight:800;letter-spacing:-.02em">${s.gameName}</div><div style="font-size:13px;color:var(--muted);margin-top:3px">${fmtDate(s.date)} · ${s.players.length} joueurs</div>`;
+  wrap.appendChild(title);
+
+  // Ranking
   wrap.appendChild(div("slbl","Classement final"));
   sorted.forEach((p,i)=>{
     const row=div(rankClass(i));
     row.innerHTML=`<div class="${badgeClass(i)}">${rankBadge(i)}</div><div class="${avClass(p)}">${p.emoji}</div><div class="rank-name">${p.name}</div><div class="rank-score" style="color:${col(p.total)}">${p.total}</div>`;
     wrap.appendChild(row);
   });
+
+  // Detail table
   wrap.appendChild(div("slbl","Détail des manches"));
   const card=div("card");
   const maxR=s.round||Math.max(...s.players.map(p=>p.scores.length),1);
-  let th=`<tr><th>Joueur</th>`;
-  for(let i=1;i<=maxR;i++)th+=`<th style="text-align:center">M${i}</th>`;
-  th+=`<th style="text-align:right;color:var(--accent)">Total</th></tr>`;
+  let thHtml=`<tr><th>Joueur</th>`;
+  for(let i=1;i<=maxR;i++)thHtml+=`<th style="text-align:center">M${i}</th>`;
+  thHtml+=`<th style="text-align:right;color:var(--accent)">Total</th></tr>`;
   let tbody="";
   s.players.forEach(p=>{
     let row=`<tr><td>${p.emoji} ${p.name}</td>`;
     for(let i=1;i<=maxR;i++){
-      const entry=Array.isArray(p.scores)&&typeof p.scores[0]==="object"?p.scores.find(sc=>sc.r===i):undefined;
-      const legacyVal=Array.isArray(p.scores)&&typeof p.scores[i-1]==="number"?p.scores[i-1]:undefined;
-      const v=entry?entry.v:legacyVal;
-      row+=v!==undefined?`<td style="text-align:center;color:${v<0?"#dc2626":"var(--text)"}">${v>0?"+":""}${v}</td>`:`<td style="text-align:center;color:var(--dim)">—</td>`;
+      const isObj=Array.isArray(p.scores)&&p.scores.length>0&&typeof p.scores[0]==="object";
+      const entry=isObj?p.scores.find(sc=>sc.r===i):null;
+      const v=entry?entry.v:(isObj?undefined:p.scores[i-1]);
+      row+=v!==undefined?`<td style="text-align:center;color:${v<0?"#c03030":"var(--text)"}">${v>0?"+":""}${v}</td>`:`<td style="text-align:center;color:var(--dim)">—</td>`;
     }
     const total=Array.isArray(p.scores)?p.scores.reduce((a,b)=>a+(typeof b==="object"?b.v:b),0):0;
-    row+=`<td style="text-align:right;color:${col(total)};font-weight:700">${total}</td></tr>`;
+    row+=`<td style="text-align:right;color:${col(total)};font-weight:700;font-family:DM Mono,monospace">${total}</td></tr>`;
     tbody+=row;
   });
-  const tbl=el("table","dtable");tbl.innerHTML=th+tbody;
-  const ow=div("");ow.style.overflowX="auto";ow.appendChild(tbl);card.appendChild(ow);
+  const tbl=el("table","dtable");tbl.innerHTML=thHtml+tbody;
+  const ow=div("");ow.style.overflowX="auto";
+  ow.appendChild(tbl);card.appendChild(ow);
   wrap.appendChild(card);
 }
+
+// ── SHARE AS IMAGE ──────────────────────────────────────────
+function shareAsImage(s,sorted){
+  // Build an offscreen canvas with the score card
+  const W=640, PAD=40;
+  const canvas=document.createElement("canvas");
+  const dpr=window.devicePixelRatio||2;
+
+  // Measure height needed
+  const HEADER=120, ROW=72, FOOTER=60;
+  const H=HEADER + sorted.length*ROW + FOOTER + PAD*2;
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  canvas.style.width=W+"px"; canvas.style.height=H+"px";
+  const ctx=canvas.getContext("2d");
+  ctx.scale(dpr,dpr);
+
+  // Get current theme colors
+  const cs=getComputedStyle(document.documentElement);
+  const bgCol=cs.getPropertyValue("--bg").trim()||"#5ba8a0";
+  const surfCol=cs.getPropertyValue("--surface").trim()||"#e8e0d0";
+  const accentCol=cs.getPropertyValue("--accent").trim()||"#2e7d78";
+  const textCol=cs.getPropertyValue("--text").trim()||"#1e3d3a";
+  const mutedCol=cs.getPropertyValue("--muted").trim()||"rgba(30,61,58,0.5)";
+
+  // Background gradient
+  const grad=ctx.createLinearGradient(0,0,W,H);
+  grad.addColorStop(0,bgCol);
+  grad.addColorStop(1,accentCol);
+  ctx.fillStyle=grad;
+  ctx.fillRect(0,0,W,H);
+
+  // Decorative circles
+  ctx.globalAlpha=0.12;
+  ctx.fillStyle="#fff";
+  ctx.beginPath();ctx.arc(W-60,60,120,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(40,H-40,80,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=1;
+
+  // Title
+  ctx.fillStyle="#fff";
+  ctx.font="bold 32px sans-serif";
+  ctx.textAlign="left";
+  ctx.fillText("🏆 "+s.gameName, PAD, PAD+38);
+
+  ctx.font="16px sans-serif";
+  ctx.globalAlpha=0.75;
+  ctx.fillText(fmtDate(s.date)+" · "+s.players.length+" joueurs", PAD, PAD+66);
+  ctx.globalAlpha=1;
+
+  // Divider
+  ctx.fillStyle="rgba(255,255,255,0.3)";
+  ctx.fillRect(PAD, HEADER, W-PAD*2, 1.5);
+
+  // Player rows
+  const medals=["🥇","🥈","🥉"];
+  sorted.forEach((p,i)=>{
+    const y=HEADER+PAD/2+i*ROW;
+    const isFirst=i===0;
+
+    // Row background
+    ctx.globalAlpha=isFirst?0.22:0.10;
+    ctx.fillStyle="#fff";
+    roundRect(ctx, PAD-8, y+4, W-PAD*2+16, ROW-10, 16);
+    ctx.fill();
+    ctx.globalAlpha=1;
+
+    // Medal / rank
+    ctx.font=(isFirst?"28px":"22px")+" sans-serif";
+    ctx.textAlign="left";
+    ctx.fillText(medals[i]||(i+1+"°"), PAD+4, y+ROW/2+10);
+
+    // Emoji avatar
+    ctx.font="28px sans-serif";
+    ctx.fillText(p.emoji, PAD+54, y+ROW/2+10);
+
+    // Name
+    ctx.fillStyle="#fff";
+    ctx.font=(isFirst?"bold 22px":"18px")+" sans-serif";
+    ctx.textAlign="left";
+    ctx.fillText(p.name, PAD+100, y+ROW/2+8);
+
+    // Score
+    ctx.font="bold "+(isFirst?"30px":"24px")+" monospace";
+    ctx.textAlign="right";
+    ctx.fillStyle=isFirst?"#FFD700":"#fff";
+    ctx.fillText(p.total+" pts", W-PAD, y+ROW/2+10);
+  });
+
+  // Footer
+  ctx.fillStyle="rgba(255,255,255,0.5)";
+  ctx.font="13px sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText("ScoreKeeper", W/2, H-PAD/2+10);
+
+  // Export
+  canvas.toBlob(blob=>{
+    if(!blob)return;
+    const file=new File([blob],"scorekeeper-"+s.gameName+".png",{type:"image/png"});
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+      navigator.share({title:s.gameName+" — Résultats",files:[file]}).catch(()=>fallbackShare(canvas,s,sorted));
+    } else {
+      fallbackShare(canvas,s,sorted);
+    }
+  },"image/png");
+}
+
+function fallbackShare(canvas,s,sorted){
+  // Show image in modal with download link
+  showModal((sheet,close)=>{
+    sheet.appendChild(div("mtitle","📸 Image du classement"));
+    const img=document.createElement("img");
+    img.src=canvas.toDataURL("image/png");
+    img.style.cssText="width:100%;border-radius:14px;margin-bottom:14px;box-shadow:0 4px 20px rgba(0,0,0,0.2)";
+    sheet.appendChild(img);
+    const dl=document.createElement("a");
+    dl.href=canvas.toDataURL("image/png");
+    dl.download="scorekeeper-"+s.gameName+".png";
+    dl.className="btn btn-p btn-full";
+    dl.style.textDecoration="none";
+    dl.textContent="⬇️ Télécharger l'image";
+    sheet.appendChild(dl);
+    const tb=btn("btn btn-s btn-full","✕ Fermer",close);
+    tb.style.marginTop="8px";
+    sheet.appendChild(tb);
+  });
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.lineTo(x+w-r,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);
+  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);
+  ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
 
 // ── STATS ──────────────────────────────────────────────────
 let statsView="games";
