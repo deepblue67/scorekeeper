@@ -349,6 +349,146 @@ h1{font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(--text)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 .fu{animation:fadeUp .32s cubic-bezier(.16,1,.3,1) both}
 
+/* ── TEAL / SOFT MODERN ─────────────────────────────────── */
+[data-theme="teal"] body{background:#f4f7f6}
+[data-theme="teal"] .inner{padding-left:20px;padding-right:20px}
+[data-theme="teal"] .hdr{
+  padding:calc(var(--safe-top) + 24px) 0 20px;
+  position:relative;background:transparent
+}
+[data-theme="teal"] h1{font-size:30px;font-weight:760;letter-spacing:-.045em}
+[data-theme="teal"] .sub{font-size:13px;margin-top:4px;color:var(--muted)}
+[data-theme="teal"] .hdr-logo{
+  width:44px;height:44px;border-radius:15px;
+  background:var(--surface);padding:4px;
+  box-shadow:0 6px 20px rgba(22,58,54,.09)
+}
+[data-theme="teal"] .card{
+  border:1px solid var(--border);border-radius:18px;
+  padding:20px;margin-bottom:14px;
+  box-shadow:0 8px 28px rgba(22,58,54,.055)
+}
+[data-theme="teal"] .ctitle{
+  color:var(--text);font-size:12px;letter-spacing:.075em;
+  margin-bottom:16px
+}
+[data-theme="teal"] .ctitle::before{width:4px;height:14px}
+[data-theme="teal"] .btn{
+  min-height:50px;border-radius:14px;padding:13px 20px;
+  font-size:15px;font-weight:680;letter-spacing:0;
+  transition:transform .16s ease,background .16s ease,box-shadow .16s ease
+}
+[data-theme="teal"] .btn:active{transform:scale(.98)}
+[data-theme="teal"] .btn-p{
+  background:var(--accent);
+  box-shadow:0 7px 18px rgba(20,125,115,.20)
+}
+[data-theme="teal"] .btn-p:hover{
+  background:var(--accent2);
+  box-shadow:0 9px 22px rgba(20,125,115,.24)
+}
+[data-theme="teal"] .btn-s{
+  background:var(--accent-lt);color:var(--accent2);
+  border:1px solid rgba(20,125,115,.08)
+}
+[data-theme="teal"] .btn-g{border-radius:12px}
+[data-theme="teal"] .btn-sm{
+  min-height:38px;border-radius:11px;padding:8px 14px;font-size:13px
+}
+[data-theme="teal"] .btn-ico{min-height:44px;width:44px;height:44px;padding:0}
+[data-theme="teal"] .inp,
+[data-theme="teal"] #game-sel{
+  min-height:52px;background:var(--surface2)!important;
+  border:1px solid transparent!important;border-radius:14px!important;
+  padding:14px 15px!important;box-shadow:none!important;
+  font-size:15px!important
+}
+[data-theme="teal"] .inp:focus{
+  background:var(--surface)!important;border-color:var(--accent)!important;
+  box-shadow:0 0 0 4px rgba(20,125,115,.10)!important
+}
+[data-theme="teal"] .lbl{
+  color:var(--muted);font-size:11px;letter-spacing:.09em;margin-bottom:8px
+}
+[data-theme="teal"] .fg{margin-bottom:18px}
+[data-theme="teal"] .active-banner{
+  border:1px solid rgba(20,125,115,.10);
+  border-radius:16px;padding:14px 16px;margin-bottom:16px
+}
+[data-theme="teal"] .tabbar{
+  gap:3px;background:var(--surface2);
+  border-radius:14px;padding:4px;box-shadow:none
+}
+[data-theme="teal"] .tab{border-radius:11px;padding:10px 6px}
+[data-theme="teal"] .tab.on{
+  background:var(--surface);color:var(--accent2);
+  box-shadow:0 3px 10px rgba(22,58,54,.08)
+}
+[data-theme="teal"] .statusbar{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:13px 15px
+}
+[data-theme="teal"] .score-row,
+[data-theme="teal"] .rank-item,
+[data-theme="teal"] .hist{
+  border:1px solid var(--border);border-radius:16px;
+  box-shadow:0 5px 18px rgba(22,58,54,.045)
+}
+[data-theme="teal"] .score-row{padding:15px 16px}
+[data-theme="teal"] .rank-item{padding:15px 16px}
+[data-theme="teal"] .rank-score{
+  background:transparent;padding:0;border-radius:0
+}
+[data-theme="teal"] .stat-card{
+  border:1px solid var(--border);border-radius:16px;
+  box-shadow:0 5px 18px rgba(22,58,54,.045)
+}
+[data-theme="teal"] .slbl{
+  color:var(--muted);font-size:11px;letter-spacing:.11em;
+  margin:24px 2px 10px
+}
+[data-theme="teal"] .chip{
+  border:1px solid var(--border);border-radius:12px;
+  box-shadow:none;padding:8px 12px
+}
+[data-theme="teal"] .rpill{
+  border-radius:12px;padding:8px 13px;
+  box-shadow:0 5px 14px rgba(20,125,115,.16)
+}
+[data-theme="teal"] .overlay{
+  background:rgba(15,32,30,.34);
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)
+}
+[data-theme="teal"] .sheet{
+  border-radius:24px 24px 0 0;padding:20px 20px calc(24px + var(--safe-bot));
+  box-shadow:0 -16px 50px rgba(15,32,30,.16)
+}
+[data-theme="teal"] .handle{
+  width:36px;height:4px;background:rgba(22,43,41,.16);margin-bottom:22px
+}
+[data-theme="teal"] .mtitle{font-size:21px;font-weight:760;margin-bottom:20px}
+[data-theme="teal"] .ndisp{
+  background:var(--surface2);border:1px solid transparent;
+  border-radius:16px;box-shadow:none
+}
+[data-theme="teal"] .nk{
+  height:62px;border:1px solid var(--border);border-radius:15px;
+  box-shadow:0 3px 12px rgba(22,58,54,.04);font-weight:560
+}
+[data-theme="teal"] nav{
+  padding:8px 10px 2px;border-radius:20px 20px 0 0;
+  border-top:1px solid var(--border);
+  box-shadow:0 -8px 30px rgba(22,58,54,.07)
+}
+[data-theme="teal"] .nb{
+  gap:3px;padding:7px 3px calc(9px + var(--safe-bot));
+  border-radius:13px;font-size:10px;font-weight:620;
+  letter-spacing:0;text-transform:none
+}
+[data-theme="teal"] .nb.on{background:var(--accent-lt);color:var(--accent2)}
+[data-theme="teal"] .nb svg{width:21px;height:21px}
+[data-theme="teal"] .nb-dot{display:none}
+
 /* ── PC LAYOUT (>= 1280px) ── */
 @media (min-width: 1280px) {
   html, body { overflow: auto; }
@@ -406,7 +546,7 @@ h1{font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(--text)}
 <script>
 
 // ── VERSION ─────────────────────────────────────────────────
-const APP_VERSION = 'V20260611 22H57';
+const APP_VERSION = 'V20260611 23H13';
 
 // ── THEMES ─────────────────────────────────────────────────
 const THEMES = [
@@ -419,12 +559,12 @@ const THEMES = [
     shadow:"0 2px 8px rgba(46,125,120,0.10)", navBg:"#ffffff", accentLt:"#e0f2f0"
   },
   {
-    // Teal — fond teal moyen, cartes blanc cassé chaud, texte foncé
+    // Teal — identité Soft Modern claire, calme et tactile
     id:"teal", name:"Teal", icon:"🌊",
-    bg:"#4a9b92", surface:"#f2ede4", surface2:"#e0d8cc",
-    border:"rgba(30,80,74,0.14)", accent:"#236b64", accent2:"#1a5250",
-    text:"#1a2e2c", muted:"rgba(26,46,44,0.52)", dim:"rgba(26,46,44,0.28)",
-    shadow:"0 2px 10px rgba(30,80,74,0.13)", navBg:"#f2ede4", accentLt:"#daf0ee"
+    bg:"#f4f7f6", surface:"#ffffff", surface2:"#edf3f1",
+    border:"rgba(22,58,54,0.10)", accent:"#147d73", accent2:"#0d5f58",
+    text:"#162b29", muted:"rgba(22,43,41,0.60)", dim:"rgba(22,43,41,0.34)",
+    shadow:"0 8px 28px rgba(22,58,54,0.07)", navBg:"#ffffff", accentLt:"#dff2ef"
   },
   {
     // Nuit — fond bleu nuit, cartes bleu ardoise, texte blanc
@@ -516,6 +656,7 @@ try{currentTheme=localStorage.getItem("sk_theme")||currentTheme}catch(e){
 function applyTheme(id) {
   const t = THEMES.find(x => x.id === id) || THEMES[0];
   currentTheme = id;
+  document.documentElement.dataset.theme = t.id;
   try{localStorage.setItem("sk_theme",id)}catch(e){
     console.warn("[Stockage] Thème non mémorisé",e)
   }
