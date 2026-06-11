@@ -608,6 +608,208 @@ h1{font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(--text)}
   [data-theme="teal"] .home-players-card{padding:18px}
 }
 
+/* ── MERCURE / CHROME & BRUSHED STEEL ───────────────────── */
+[data-theme="mercure"] body{
+  background:
+    radial-gradient(circle at 50% -12%,rgba(105,236,255,.13),transparent 32%),
+    linear-gradient(160deg,#05090d 0%,#111820 48%,#070b10 100%);
+  background-attachment:fixed
+}
+[data-theme="mercure"] #pages::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0 1px,transparent 1px 4px),
+    linear-gradient(115deg,transparent 15%,rgba(255,255,255,.025) 45%,transparent 72%);
+  mix-blend-mode:screen
+}
+[data-theme="mercure"] .page{z-index:1}
+[data-theme="mercure"] .inner{padding-left:18px;padding-right:18px}
+[data-theme="mercure"] .hdr{
+  background:transparent!important;padding-top:calc(var(--safe-top) + 24px)
+}
+[data-theme="mercure"] h1{
+  color:#f5fbff;text-shadow:0 1px 0 #000,0 0 18px rgba(109,230,255,.10)
+}
+[data-theme="mercure"] .sub{color:rgba(220,233,241,.60)}
+[data-theme="mercure"] .hdr-logo{
+  border:1px solid rgba(225,242,250,.42);background:#dfe7eb;
+  box-shadow:inset 0 1px 1px #fff,0 8px 22px rgba(0,0,0,.35)
+}
+[data-theme="mercure"] .card,
+[data-theme="mercure"] .rank-item,
+[data-theme="mercure"] .score-row,
+[data-theme="mercure"] .hist,
+[data-theme="mercure"] .stat-card{
+  border:1px solid rgba(225,239,247,.26);
+  background:
+    linear-gradient(105deg,rgba(255,255,255,.08),transparent 24%,rgba(255,255,255,.035) 50%,transparent 78%),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.012) 0 1px,transparent 1px 3px),
+    linear-gradient(145deg,#28323a 0%,#182129 52%,#303b43 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.19),
+    inset 0 -1px 0 rgba(0,0,0,.48),
+    0 12px 28px rgba(0,0,0,.32);
+  border-radius:18px
+}
+[data-theme="mercure"] .ctitle,
+[data-theme="mercure"] .lbl,
+[data-theme="mercure"] .slbl{
+  color:#9cefff;text-shadow:0 0 12px rgba(73,222,255,.18)
+}
+[data-theme="mercure"] .ctitle::before{background:#67e7ff;box-shadow:0 0 10px rgba(75,227,255,.55)}
+[data-theme="mercure"] .inp,
+[data-theme="mercure"] #game-sel{
+  color:#f5fbff!important;
+  background:
+    linear-gradient(115deg,rgba(255,255,255,.07),transparent 35%),
+    linear-gradient(145deg,#10171d,#1b252d)!important;
+  border:1px solid rgba(212,234,244,.29)!important;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.72),0 1px 0 rgba(255,255,255,.08)!important
+}
+[data-theme="mercure"] .inp:focus{
+  border-color:#70e9ff!important;
+  box-shadow:0 0 0 3px rgba(77,220,247,.14),inset 0 1px 3px rgba(0,0,0,.7)!important
+}
+[data-theme="mercure"] .inp[type="date"]::-webkit-calendar-picker-indicator{
+  filter:invert(88%) sepia(18%) saturate(922%) hue-rotate(155deg) brightness(106%);
+  opacity:.9
+}
+[data-theme="mercure"] .btn{
+  border:1px solid rgba(224,240,248,.25);border-radius:14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 7px 18px rgba(0,0,0,.24)
+}
+[data-theme="mercure"] .btn-p{
+  color:#031014;border-color:rgba(213,250,255,.72);
+  background:
+    linear-gradient(100deg,transparent 0 16%,rgba(255,255,255,.7) 35%,transparent 51%),
+    linear-gradient(135deg,#28bcd5 0%,#d7fbff 43%,#45cde4 62%,#187f99 100%);
+  background-size:220% 100%,100% 100%;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    inset 0 -2px 5px rgba(5,64,76,.42),
+    0 8px 24px rgba(41,202,230,.22)
+}
+[data-theme="mercure"] .btn-p:hover{background-position:42% 0,0 0}
+[data-theme="mercure"] .btn-s{
+  color:#b6f5ff;border-color:rgba(126,228,247,.28);
+  background:linear-gradient(145deg,#26343d,#152027)
+}
+[data-theme="mercure"] .btn-d{
+  color:#ffb8bc;background:linear-gradient(145deg,#3a242a,#21171b);
+  border-color:rgba(255,150,160,.22)
+}
+[data-theme="mercure"] .tabbar{
+  background:linear-gradient(145deg,#0b1116,#202a31);
+  border:1px solid rgba(223,239,247,.20);box-shadow:inset 0 1px 4px rgba(0,0,0,.62)
+}
+[data-theme="mercure"] .tab.on{
+  color:#071317;background:linear-gradient(145deg,#d9f8fc,#45cbe3);
+  box-shadow:inset 0 1px 0 #fff,0 3px 12px rgba(51,210,237,.22)
+}
+[data-theme="mercure"] .active-banner,
+[data-theme="mercure"] .statusbar{
+  color:#eaf8fc;background:linear-gradient(135deg,rgba(65,206,231,.13),rgba(24,34,42,.94));
+  border:1px solid rgba(105,224,245,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)
+}
+[data-theme="mercure"] .rpill,
+[data-theme="mercure"] .badge.ba,
+[data-theme="mercure"] .chip.on{
+  color:#061317;background:linear-gradient(145deg,#d7f9fd,#45cce4);
+  border:1px solid rgba(223,252,255,.65)
+}
+[data-theme="mercure"] .rank-score,
+[data-theme="mercure"] .sr-total,
+[data-theme="mercure"] .sv{color:#7deaff;text-shadow:0 0 13px rgba(67,220,247,.25)}
+[data-theme="mercure"] .sheet{
+  color:#edf8fb;
+  background:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.012) 0 1px,transparent 1px 3px),
+    linear-gradient(155deg,#303b43,#11181e 52%,#222c33);
+  border:1px solid rgba(225,239,247,.25);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 -18px 50px rgba(0,0,0,.52)
+}
+[data-theme="mercure"] .overlay{
+  background:rgba(1,5,8,.68);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)
+}
+[data-theme="mercure"] .handle{background:linear-gradient(90deg,#45545d,#d5e3e8,#45545d)}
+[data-theme="mercure"] .ndisp{
+  color:#a7f2ff;
+  background:linear-gradient(145deg,#091015,#1a242b)!important;
+  border:1px solid rgba(118,227,247,.28);
+  box-shadow:inset 0 2px 7px rgba(0,0,0,.72)
+}
+[data-theme="mercure"] .nk{
+  color:#effaff;
+  background:linear-gradient(145deg,#36434c,#172027);
+  border:1px solid rgba(224,240,248,.23);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 4px 12px rgba(0,0,0,.25)
+}
+[data-theme="mercure"] .nk:active{
+  color:#051317;background:linear-gradient(145deg,#d8f9fd,#43cbe3)
+}
+[data-theme="mercure"] nav{
+  background:rgba(21,29,35,.93)!important;
+  border-top:1px solid rgba(222,239,247,.25);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 -12px 30px rgba(0,0,0,.38);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)
+}
+[data-theme="mercure"] .nb{color:rgba(220,234,240,.56)}
+[data-theme="mercure"] .nb.on{
+  color:#a6f2ff;
+  background:linear-gradient(145deg,rgba(199,246,252,.16),rgba(46,196,221,.10));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09)
+}
+[data-theme="mercure"] .nb.on svg{filter:drop-shadow(0 0 5px rgba(76,225,251,.38))}
+[data-theme="mercure"] .home-shell{width:100%;max-width:520px;margin:0 auto}
+[data-theme="mercure"] .home-header{
+  position:relative;display:block;text-align:center;
+  padding:calc(var(--safe-top) + 28px) 8px 24px
+}
+[data-theme="mercure"] .home-brand{display:flex;align-items:center;justify-content:center;gap:12px}
+[data-theme="mercure"] .home-header .hdr-logo{width:50px;height:50px;padding:4px}
+[data-theme="mercure"] .home-header h1{font-size:35px;letter-spacing:-.05em}
+[data-theme="mercure"] .home-header .sub{font-size:17px;margin-top:9px;color:#9cefff}
+[data-theme="mercure"] .home-suits{display:none}
+[data-theme="mercure"] .home-field-card,
+[data-theme="mercure"] .home-players-card{padding:20px;margin-bottom:14px}
+[data-theme="mercure"] .home-field-card .fg{margin:0}
+[data-theme="mercure"] .home-field-card .inp,
+[data-theme="mercure"] .home-field-card #game-sel{min-height:58px!important;padding:16px!important}
+[data-theme="mercure"] .home-game-picker{display:flex!important;align-items:center;justify-content:space-between}
+[data-theme="mercure"] .home-game-picker::after{content:"⌄";font-size:24px;color:#83ebff}
+[data-theme="mercure"] .home-players-head{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:15px
+}
+[data-theme="mercure"] .home-players-head .ctitle{margin:0}
+[data-theme="mercure"] #player-list.home-player-list{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px!important
+}
+[data-theme="mercure"] .home-player-list .drag-row{
+  min-width:0;display:grid!important;position:relative;
+  grid-template-columns:42px minmax(0,1fr);grid-template-rows:auto auto;gap:2px 9px!important;
+  min-height:86px;padding:12px 30px 12px 12px!important;margin:0!important;
+  border:1px solid rgba(221,239,247,.24)!important;border-radius:14px!important;
+  background:linear-gradient(145deg,#303b43,#141c22)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 6px 15px rgba(0,0,0,.24)
+}
+[data-theme="mercure"] .home-player-list .drag-number{display:none!important}
+[data-theme="mercure"] .home-player-list .drag-handle{
+  grid-column:2;grid-row:2;justify-self:start;font-size:13px!important;padding:0!important
+}
+[data-theme="mercure"] .home-player-list .av{
+  grid-column:1;grid-row:1 / span 2;width:42px;height:42px;align-self:center;border-radius:50%;
+  border:1px solid rgba(255,255,255,.32);box-shadow:inset 0 1px 0 rgba(255,255,255,.35)
+}
+[data-theme="mercure"] .home-player-list .drag-name{
+  grid-column:2;grid-row:1;align-self:end;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;font-size:16px!important
+}
+[data-theme="mercure"] .home-player-list .drag-remove{
+  position:absolute;right:7px;top:7px;color:#9cefff!important;font-size:18px!important
+}
+[data-theme="mercure"] .home-player-list .drag-hint{grid-column:1 / -1}
+[data-theme="mercure"] .home-start{min-height:62px!important;margin-top:12px!important;font-size:17px!important}
+
 /* ── PC LAYOUT (>= 1280px) ── */
 @media (min-width: 1280px) {
   html, body { overflow: auto; }
@@ -665,7 +867,7 @@ h1{font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(--text)}
 <script>
 
 // ── VERSION ─────────────────────────────────────────────────
-const APP_VERSION = 'V20260611 23H43';
+const APP_VERSION = 'V20260612 00H02';
 
 // ── THEMES ─────────────────────────────────────────────────
 const THEMES = [
@@ -764,6 +966,14 @@ const THEMES = [
     border:"rgba(220,180,60,0.22)", accent:"#c8920e", accent2:"#e0aa1a",
     text:"#f0e8d0", muted:"rgba(240,232,208,0.52)", dim:"rgba(240,232,208,0.25)",
     shadow:"0 2px 14px rgba(0,0,0,0.45)", navBg:"#1c1c2e", accentLt:"#2a2210"
+  },
+  {
+    // Mercure — graphite, acier brossé, chrome et reflets cyan
+    id:"mercure", name:"Mercure", icon:"◉",
+    bg:"#080d12", surface:"#202a31", surface2:"#11191f",
+    border:"rgba(220,238,247,0.25)", accent:"#5edcf2", accent2:"#9cefff",
+    text:"#edf8fb", muted:"rgba(220,234,240,0.60)", dim:"rgba(220,234,240,0.32)",
+    shadow:"0 12px 28px rgba(0,0,0,0.34)", navBg:"#151d23", accentLt:"rgba(74,211,235,0.14)"
   }
 ];
 
@@ -806,7 +1016,7 @@ function applyTheme(id) {
     inp.style.color = t.text;
     inp.style.borderColor = t.border;
     // Invert calendar icon for dark themes
-    const isDark = t.id === "night" || t.id === "minuit" || t.id === "myrtille";
+    const isDark = t.id === "night" || t.id === "minuit" || t.id === "myrtille" || t.id === "mercure";
     inp.style.colorScheme = isDark ? "dark" : "light";
   });
 }
