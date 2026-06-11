@@ -489,6 +489,125 @@ h1{font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(--text)}
 [data-theme="teal"] .nb svg{width:21px;height:21px}
 [data-theme="teal"] .nb-dot{display:none}
 
+/* Teal home: composition aligned with the approved visual */
+[data-theme="teal"] .home-shell{
+  width:100%;max-width:520px;margin:0 auto;
+  padding:0 18px calc(18px + var(--safe-bot))
+}
+[data-theme="teal"] .home-header{
+  position:relative;display:block;text-align:center;
+  padding:calc(var(--safe-top) + 30px) 10px 26px
+}
+[data-theme="teal"] .home-brand{
+  display:flex;align-items:center;justify-content:center;gap:12px
+}
+[data-theme="teal"] .home-header .hdr-logo{
+  width:52px;height:52px;padding:5px;border-radius:16px;
+  box-shadow:none;background:transparent
+}
+[data-theme="teal"] .home-header h1{
+  font-size:36px;font-weight:780;letter-spacing:-.055em
+}
+[data-theme="teal"] .home-header .sub{
+  margin-top:10px;font-size:18px;font-weight:540;color:var(--accent2)
+}
+[data-theme="teal"] .home-suits{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:12px;font-size:13px;font-weight:700
+}
+[data-theme="teal"] .home-suits::before,
+[data-theme="teal"] .home-suits::after{
+  content:"";width:52px;height:1px;background:var(--border)
+}
+[data-theme="teal"] .home-suits .heart{color:#db655c}
+[data-theme="teal"] .home-suits .diamond{color:#d79a58}
+[data-theme="teal"] .home-field-card,
+[data-theme="teal"] .home-players-card{
+  padding:22px;margin-bottom:16px;border-radius:16px;
+  box-shadow:0 4px 16px rgba(22,58,54,.055)
+}
+[data-theme="teal"] .home-field-card .fg{margin:0}
+[data-theme="teal"] .home-field-card .lbl{
+  color:var(--accent2);font-size:12px;margin-bottom:14px
+}
+[data-theme="teal"] .home-field-card .inp,
+[data-theme="teal"] .home-field-card #game-sel{
+  min-height:62px!important;background:#fff!important;
+  border:1px solid rgba(22,58,54,.14)!important;border-radius:12px!important;
+  padding:18px!important;font-size:17px!important
+}
+[data-theme="teal"] .home-game-picker{
+  display:flex!important;align-items:center;justify-content:space-between
+}
+[data-theme="teal"] .home-game-picker::after{
+  content:"⌄";color:var(--accent2);font-size:25px;line-height:1;
+  transform:translateY(-3px)
+}
+[data-theme="teal"] .home-players-head{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:16px
+}
+[data-theme="teal"] .home-players-head .ctitle{
+  color:var(--accent2);margin:0
+}
+[data-theme="teal"] .home-players-head .ctitle::before{display:none}
+[data-theme="teal"] .home-players-card .btn-sm{
+  min-height:38px;border-radius:10px
+}
+[data-theme="teal"] #player-list.home-player-list{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px!important
+}
+[data-theme="teal"] .home-player-list .drag-row{
+  min-width:0;display:grid!important;
+  grid-template-columns:42px minmax(0,1fr);
+  grid-template-rows:auto auto;gap:2px 9px!important;
+  min-height:86px;padding:12px 30px 12px 12px!important;margin:0!important;
+  border:1px solid rgba(22,58,54,.13)!important;
+  border-radius:13px!important;background:#fff!important
+}
+[data-theme="teal"] .home-player-list .drag-number{display:none!important}
+[data-theme="teal"] .home-player-list .drag-handle{
+  grid-column:2;grid-row:2;justify-self:start;
+  font-size:13px!important;padding:0!important
+}
+[data-theme="teal"] .home-player-list .av{
+  grid-column:1;grid-row:1 / span 2;width:42px;height:42px;
+  align-self:center;border-radius:50%;font-size:21px
+}
+[data-theme="teal"] .home-player-list .drag-name{
+  grid-column:2;grid-row:1;align-self:end;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:16px!important
+}
+[data-theme="teal"] .home-player-list .drag-remove{
+  position:absolute;right:7px;top:7px;
+  color:var(--accent2)!important;font-size:18px!important
+}
+[data-theme="teal"] .home-player-list .drag-hint{
+  grid-column:1 / -1;margin-top:5px!important
+}
+[data-theme="teal"] .home-start{
+  min-height:64px!important;margin-top:14px!important;
+  border-radius:13px!important;font-size:17px!important;
+  box-shadow:0 8px 22px rgba(20,125,115,.18)!important
+}
+[data-theme="teal"] nav{
+  max-width:560px;width:100%;margin:0 auto;
+  padding:8px 12px 3px;border-radius:20px 20px 0 0
+}
+[data-theme="teal"] .nb{
+  min-height:58px;padding:8px 2px calc(7px + var(--safe-bot));
+  border-radius:13px;font-size:10px
+}
+[data-theme="teal"] .nb.on{background:rgba(20,125,115,.10)}
+
+@media (max-width:380px){
+  [data-theme="teal"] .home-header h1{font-size:32px}
+  [data-theme="teal"] .home-shell{padding-left:14px;padding-right:14px}
+  [data-theme="teal"] .home-field-card,
+  [data-theme="teal"] .home-players-card{padding:18px}
+}
+
 /* ── PC LAYOUT (>= 1280px) ── */
 @media (min-width: 1280px) {
   html, body { overflow: auto; }
@@ -546,7 +665,7 @@ h1{font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(--text)}
 <script>
 
 // ── VERSION ─────────────────────────────────────────────────
-const APP_VERSION = 'V20260611 23H13';
+const APP_VERSION = 'V20260611 23H43';
 
 // ── THEMES ─────────────────────────────────────────────────
 const THEMES = [
@@ -915,15 +1034,19 @@ function renderPage(id){
 // ── HOME ──────────────────────────────────────────────────
 function buildHome(pg){
   let selGame="", selDate=today(), selPlayers=[];
-  const wrap=div("inner");
+  const wrap=div("inner home-shell");
   pg.appendChild(wrap);
 
   // Header
-  const hdr=div("hdr");
-  const hl=div("");
-  hl.innerHTML=`<h1>ScoreKeeper</h1><div class="sub">Nouvelle partie</div>`;
+  const hdr=div("hdr home-header");
+  const hl=div("home-heading");
+  const brand=div("home-brand");
   const logo=el("img","hdr-logo","",{src:LOGO,alt:""});
-  hdr.appendChild(hl);hdr.appendChild(logo);
+  brand.appendChild(logo);
+  brand.appendChild(div("",`<h1>ScoreKeeper</h1>`));
+  hl.appendChild(brand);
+  hl.insertAdjacentHTML("beforeend",`<div class="sub">Nouvelle partie</div><div class="home-suits"><span>♣</span><span class="heart">♥</span><span class="diamond">♦</span><span>♣</span></div>`);
+  hdr.appendChild(hl);
   wrap.appendChild(hdr);
 
   // Active session banner
@@ -936,15 +1059,15 @@ function buildHome(pg){
   }
 
   // Game card
-  const gc=div("card fu");
+  const gc=div("card fu home-field-card");
   const gfg=div("fg");
   const glbl=el("label","lbl","Jeu");
-  const gpick=div("",`<div style="display:flex;gap:8px">
-    <div id="game-sel" style="flex:1;background:var(--surface);border:none;border-radius:var(--rs);box-shadow:var(--shadow);padding:13px 15px;font-size:15px;cursor:pointer;color:var(--dim)">Choisir un jeu…</div>
-  </div>`);
+  const gpick=div("",`<div id="game-sel" class="home-game-picker" style="background:var(--surface);border:none;border-radius:var(--rs);box-shadow:var(--shadow);padding:13px 15px;font-size:15px;cursor:pointer;color:var(--dim)">Choisir un jeu…</div>`);
   gfg.appendChild(glbl);gfg.appendChild(gpick);
   gc.appendChild(gfg);
+  wrap.appendChild(gc);
 
+  const dc=div("card fu home-field-card");
   const dfg=div("fg");
   dfg.innerHTML=`<label class="lbl">Date</label><input type="date" class="inp" id="date-inp" value="${selDate}" style="color-scheme:light"/>`;
   // Apply current theme to date input
@@ -958,12 +1081,12 @@ function buildHome(pg){
       di.style.color=t.text;
     }
   },0);
-  gc.appendChild(dfg);
-  wrap.appendChild(gc);
+  dc.appendChild(dfg);
+  wrap.appendChild(dc);
 
   // Players card
-  const pc=div("card fu");
-  const ph=div("",`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><div class="ctitle" style="margin:0">Joueurs</div></div>`);
+  const pc=div("card fu home-players-card");
+  const ph=div("",`<div class="home-players-head"><div class="ctitle">Joueurs</div></div>`);
   const padd=btn("btn btn-s btn-sm","+ Ajouter",()=>{
     showModal((sheet,close)=>{
       sheet.appendChild(div("mtitle","Sélectionner les joueurs"));
@@ -1060,12 +1183,12 @@ function buildHome(pg){
   });
   ph.firstChild.appendChild(padd);
   pc.appendChild(ph);
-  const plist=div("",`<div id="player-list" style="display:flex;flex-direction:column;gap:7px"><div style="padding:16px 0;text-align:center;color:var(--muted);font-size:14px">Aucun joueur sélectionné</div></div>`);
+  const plist=div("",`<div id="player-list" class="home-player-list"><div style="grid-column:1/-1;padding:16px 0;text-align:center;color:var(--muted);font-size:14px">Aucun joueur sélectionné</div></div>`);
   pc.appendChild(plist);
   wrap.appendChild(pc);
 
   // Start btn
-  const sb=btn("btn btn-p btn-full fu","🚀 Démarrer la partie",()=>{
+  const sb=btn("btn btn-p btn-full fu home-start","▷ Démarrer la partie",()=>{
     const gn=selGame||document.getElementById("game-sel").dataset.val||"";
     const dt=document.getElementById("date-inp").value;
     if(!gn||!selPlayers.length)return;
@@ -1130,7 +1253,7 @@ function buildHome(pg){
     const pl=document.getElementById("player-list");
     if(!pl)return;
     if(!selPlayers.length){
-      pl.innerHTML=`<div style="padding:16px 0;text-align:center;color:var(--muted);font-size:14px">Aucun joueur sélectionné</div>`;
+      pl.innerHTML=`<div style="grid-column:1/-1;padding:16px 0;text-align:center;color:var(--muted);font-size:14px">Aucun joueur sélectionné</div>`;
       return;
     }
     pl.innerHTML="";
@@ -1144,10 +1267,12 @@ function buildHome(pg){
         row.style.cssText="display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--surface);border-radius:11px;margin-bottom:7px;border:1.5px solid transparent;transition:border-color .15s,box-shadow .15s;touch-action:none;user-select:none;-webkit-user-select:none;position:relative";
 
         const num=document.createElement("div");
+        num.className="drag-number";
         num.style.cssText="width:22px;height:22px;border-radius:7px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0";
         num.textContent=idx+1;
 
         const handle=document.createElement("div");
+        handle.className="drag-handle";
         handle.style.cssText="font-size:18px;color:var(--dim);flex-shrink:0;padding:0 2px;line-height:1";
         handle.innerHTML="&#8942;&#8942;";
 
@@ -1155,10 +1280,12 @@ function buildHome(pg){
         av.className=avClass(p);av.textContent=p.emoji;
 
         const name=document.createElement("span");
+        name.className="drag-name";
         name.style.cssText="flex:1;font-weight:600;font-size:15px";
         name.textContent=p.name;
 
         const rb=document.createElement("button");
+        rb.className="drag-remove";
         rb.style.cssText="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;flex-shrink:0";
         rb.textContent="✕";
         rb.onclick=e=>{e.stopPropagation();selPlayers=selPlayers.filter(x=>x.id!==p.id);buildRows();updateBtn();};
@@ -1242,6 +1369,7 @@ function buildHome(pg){
 
       if(selPlayers.length>1){
         const hint=document.createElement("div");
+        hint.className="drag-hint";
         hint.style.cssText="text-align:center;font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:.02em";
         hint.textContent="Maintenir ⠿ et glisser pour réordonner";
         pl.appendChild(hint);
