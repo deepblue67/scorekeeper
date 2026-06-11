@@ -1,7 +1,7 @@
 // ── ScoreKeeper Service Worker ────────────────────────────────
 // À placer à la RACINE du dépôt GitHub (même niveau qu'index.html)
 
-const APP_VERSION = 'V20260611 18H30';
+const APP_VERSION = 'V20260611 19H00';
 const CACHE_NAME = `scorekeeper-${APP_VERSION}`;
 
 // Ressources à mettre en cache lors de l'installation
