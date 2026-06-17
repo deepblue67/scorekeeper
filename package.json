@@ -1,0 +1,14 @@
+{
+  "name": "scorekeeper-characterization",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "npm run test:sw && playwright test",
+    "test:sw": "node --test tests/service-worker.unit.test.js",
+    "test:headed": "playwright test --headed",
+    "serve": "node scripts/serve.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.60.0"
+  }
+}
