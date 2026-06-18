@@ -311,6 +311,34 @@ h1{font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(--text)}
 .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;gap:12px}
 .empty-ico{font-size:50px;margin-bottom:4px}
 
+/* SETTINGS INFO */
+.settings-app-card{display:flex;flex-direction:column;gap:0}
+.settings-card-title{
+  display:flex;align-items:center;gap:9px;
+  font-size:18px;font-weight:800;color:var(--text);
+  margin-bottom:16px
+}
+.settings-info-row{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:13px 0
+}
+.settings-info-row + .settings-info-row{border-top:1.5px solid var(--border)}
+.settings-info-label{font-size:15px;font-weight:750;color:var(--text);margin-bottom:3px}
+.settings-info-sub{font-size:13px;color:var(--muted);line-height:1.35}
+.settings-version-pill{
+  flex-shrink:0;border:1.5px solid var(--border);
+  background:var(--accent-lt);color:var(--accent2);
+  border-radius:99px;padding:8px 12px;
+  font-family:SFMono-Regular,Consolas,Liberation Mono,monospace;
+  font-size:12px;font-weight:800;white-space:nowrap
+}
+.settings-status-pill{
+  flex-shrink:0;border:1.5px solid var(--border);
+  background:var(--surface2);color:var(--text);
+  border-radius:99px;padding:7px 11px;
+  font-size:12px;font-weight:750;white-space:nowrap
+}
+
 /* TABLE */
 .dtable{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
 .dtable th{
@@ -1018,7 +1046,7 @@ h1{font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(--text)}
 <script>
 
 // ── VERSION ─────────────────────────────────────────────────
-const APP_VERSION = 'V20260618 21H37';
+const APP_VERSION = 'V20260618 23H39';
 
 // ── THEMES ─────────────────────────────────────────────────
 const THEMES = [
@@ -2468,8 +2496,29 @@ function buildSettings(pg){
   const wrap=div("inner");
   pg.appendChild(wrap);
   const hdr=div("hdr");
-  hdr.innerHTML=`<div><h1>Réglages</h1><div class="sub">Joueurs & jeux</div></div><div style="font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.04em;align-self:flex-start;padding-top:4px">${APP_VERSION}</div>`;
+  hdr.innerHTML=`<div><h1>R&eacute;glages</h1><div class="sub">Application &amp; pr&eacute;f&eacute;rences</div></div>`;
   wrap.appendChild(hdr);
+
+  // Application
+  wrap.appendChild(div("slbl","Application"));
+  const appCard = div("card settings-app-card");
+  appCard.innerHTML = `
+    <div class="settings-card-title"><span>&#128241;</span><span>Application</span></div>
+    <div class="settings-info-row">
+      <div>
+        <div class="settings-info-label">Version</div>
+        <div class="settings-info-sub">ScoreKeeper</div>
+      </div>
+      <div class="settings-version-pill">${APP_VERSION}</div>
+    </div>
+    <div class="settings-info-row">
+      <div>
+        <div class="settings-info-label">Mode hors-ligne</div>
+        <div class="settings-info-sub">Support&eacute; par le Service Worker</div>
+      </div>
+      <div class="settings-status-pill">&#10003; Support&eacute;</div>
+    </div>`;
+  wrap.appendChild(appCard);
 
   // Apparence
   wrap.appendChild(div("slbl","Apparence"));
@@ -2598,6 +2647,11 @@ function buildSettings(pg){
     pc.appendChild(row);
   });
   wrap.appendChild(pc);
+  const appearanceLabel = [...wrap.children].find(node => node.className === "slbl" && node.textContent === "Apparence");
+  if(appearanceLabel){
+    wrap.appendChild(appearanceLabel);
+    wrap.appendChild(themeCard);
+  }
 
   // Games
   wrap.appendChild(div("slbl","Jeux ("+D.games.length+")"));
