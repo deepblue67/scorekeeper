@@ -7,7 +7,7 @@ Ce fichier sert deux objectifs :
 - aider Christophe a se rappeler comment fonctionne l'application ;
 - donner a Codex, ou a tout autre intervenant, le contexte necessaire pour reprendre le projet sans repartir de zero.
 
-Derniere version documentee : `V20260618 23H39`.
+Derniere version documentee : `V20260618 23H59`.
 
 Derniere mise a jour du README : 2026-06-18.
 
@@ -335,7 +335,7 @@ Cette logique evite les doublons pour une meme manche.
 L'application utilise une constante :
 
 ```js
-const APP_VERSION = 'V20260618 23H39';
+const APP_VERSION = 'V20260618 23H59';
 ```
 
 Elle est presente dans :
@@ -357,7 +357,7 @@ const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
 Le test `tests/service-worker.unit.test.js` contient aussi le nom attendu du cache :
 
 ```js
-const currentCacheName = "scorekeeper-V20260618 23H39";
+const currentCacheName = "scorekeeper-V20260618 23H59";
 ```
 
 Quand on change `APP_VERSION`, il faut donc mettre a jour :
@@ -384,11 +384,12 @@ Strategie utilisee :
 - ressources locales : cache-first ;
 - requetes externes : ignorees ;
 - requetes non-GET : ignorees ;
-- anciens caches ScoreKeeper : supprimes a l'activation.
+- anciens caches ScoreKeeper : supprimes a l'activation ;
+- activation d'une nouvelle version : message `SKIP_WAITING` envoye depuis l'application apres confirmation utilisateur.
 
 Cela signifie que l'application peut fonctionner hors ligne apres avoir ete chargee au moins une fois.
 
-Attention : pour que la mise a jour soit bien prise en compte cote utilisateur, il peut etre necessaire de fermer puis relancer l'application apres deploiement.
+Quand une nouvelle version est installee en attente, l'application affiche un petit message `Nouvelle version disponible`. Le bouton `Mettre a jour` envoie `SKIP_WAITING` au service worker, puis la page se recharge quand le nouveau worker prend le controle.
 
 ## Fonctionnement Des Pages
 
@@ -405,7 +406,7 @@ L'accueil permet de :
 - choisir un jeu ;
 - choisir une date ;
 - selectionner les joueurs ;
-- reordonner les joueurs ;
+- reordonner les joueurs avec les boutons monter/descendre ;
 - demarrer une partie.
 
 Le bouton de demarrage reste desactive tant qu'il manque :
@@ -547,7 +548,7 @@ Cette fonction :
 - met a jour la couleur du navigateur ;
 - adapte les inputs de date.
 
-Themes disponibles dans la version `V20260618 23H39` :
+Themes disponibles dans la version `V20260618 23H59` :
 
 1. `material` - Material
 2. `teal` - Teal
@@ -771,11 +772,11 @@ viewport: { width: 390, height: 844 }
 
 ## Etat Des Tests
 
-Lors de la derniere validation de la version `V20260618 23H39` :
+Lors de la derniere validation de la version `V20260618 23H59` :
 
-- 13 tests Playwright reussis ;
-- 6 tests service worker reussis ;
-- total : 19 tests reussis.
+- 14 tests Playwright reussis ;
+- 7 tests service worker reussis ;
+- total : 21 tests reussis.
 
 Commandes utilisees :
 
@@ -821,11 +822,8 @@ Le commentaire en haut de `sw.js` rappelle :
 Apres remplacement des fichiers en production :
 
 1. ouvrir l'application ;
-2. fermer completement l'application ;
-3. la relancer ;
-4. verifier que la version affichee dans Reglages correspond a la nouvelle version.
-
-La fermeture/reouverture aide le service worker a prendre la nouvelle version.
+2. utiliser le bouton `Mettre a jour` si le message de nouvelle version apparait ;
+3. verifier que la version affichee dans Reglages correspond a la nouvelle version.
 
 ## Regles Importantes Pour Une Future Modification
 
@@ -858,7 +856,7 @@ VYYYYMMDD HHHH
 Exemple :
 
 ```text
-V20260618 23H39
+V20260618 23H59
 ```
 
 ### Toujours Lancer Les Tests
@@ -985,13 +983,13 @@ Elle a ensuite ete corrigee pour correspondre davantage a la proposition :
 La derniere version validee est :
 
 ```text
-V20260618 23H39
+V20260618 23H59
 ```
 
 Avec :
 
 - 13 themes disponibles ;
-- 19 tests reussis ;
+- 21 tests reussis ;
 - aucun script externe ;
 - aucun lien CSS externe ;
 - fonctionnement hors ligne conserve.
@@ -1022,6 +1020,17 @@ Changements :
 - les sections Jeux et Synchronisation restent disponibles plus bas.
 
 Cette evolution ne change pas les donnees, le service worker, l'import/export ni les themes disponibles.
+
+### 12. Mise A Jour Guidee Et Ordre Des Joueurs
+
+Deux ameliorations ciblees ont ete ajoutees :
+
+- le service worker n'active plus automatiquement une nouvelle version des l'installation ;
+- l'application affiche un message de mise a jour et envoie `SKIP_WAITING` quand l'utilisateur choisit `Mettre a jour` ;
+- la liste des joueurs selectionnes utilise maintenant des boutons monter/descendre plutot que le glisser/deposer mobile ;
+- l'ordre visible des joueurs reste l'ordre utilise au demarrage de la partie.
+
+Cette evolution conserve le stockage local, le mode hors ligne et les themes existants.
 
 ## Points Connus Et Limites
 
@@ -1082,8 +1091,8 @@ Avant de livrer :
 - [ ] incrementer `APP_VERSION` dans `index.html` ;
 - [ ] incrementer `APP_VERSION` dans `sw.js` ;
 - [ ] mettre a jour `currentCacheName` dans `tests/service-worker.unit.test.js` ;
-- [ ] lancer les 6 tests service worker ;
-- [ ] lancer les 13 tests Playwright ;
+- [ ] lancer les 7 tests service worker ;
+- [ ] lancer les 14 tests Playwright ;
 - [ ] verifier qu'il n'y a pas de dependance externe ;
 - [ ] verifier visuellement les ecrans touches ;
 - [ ] deployer uniquement `index.html` et `sw.js`.
@@ -1140,9 +1149,9 @@ Ce tableau est le suivi officiel des sujets techniques, d'architecture, de quali
 | Ne pas modifier les originaux | Les fichiers originaux dans `Downloads` ne doivent pas etre modifies directement. La livraison travaillee est dans `outputs/scorekeeper`. | Fait | Haute | Regle de travail conservee. |
 | Fichiers de production minimaux | L'application deployee a besoin uniquement de `index.html` et `sw.js`. | Fait | Haute | README recommande aussi de versionner les tests/outils sur GitHub. |
 | Depot GitHub complet hors `node_modules` | Pour garder le README coherent et conserver les tests, versionner tout le dossier sauf `node_modules`. | Fait | Moyenne | Structure recommandee : `index.html`, `sw.js`, `README.md`, `package*.json`, `playwright.config.js`, `scripts/`, `tests/`, `.gitignore`. |
-| Tests Playwright de caracterisation | Ajout de tests navigateur pour verrouiller les parcours principaux. | Fait | Haute | 13 tests Playwright dans `tests/scorekeeper.spec.js`. |
-| Tests unitaires service worker | Ajout de tests dedies au cache et au comportement hors ligne. | Fait | Haute | 6 tests dans `tests/service-worker.unit.test.js`. |
-| Total de tests | Suite actuelle composee de tests fonctionnels et service worker. | Fait | Haute | 19 tests valides sur `V20260618 23H39`. |
+| Tests Playwright de caracterisation | Ajout de tests navigateur pour verrouiller les parcours principaux. | Fait | Haute | 14 tests Playwright dans `tests/scorekeeper.spec.js`. |
+| Tests unitaires service worker | Ajout de tests dedies au cache et au comportement hors ligne. | Fait | Haute | 7 tests dans `tests/service-worker.unit.test.js`. |
+| Total de tests | Suite actuelle composee de tests fonctionnels et service worker. | Fait | Haute | 21 tests valides sur `V20260618 23H59`. |
 | Serveur local de test | Ajout d'un serveur Node local pour tester l'application sans cache parasite. | Fait | Moyenne | `scripts/serve.mjs`, port `4173`. |
 | Configuration Playwright | Tests en viewport mobile Chrome, service workers bloques dans les tests UI. | Fait | Moyenne | `playwright.config.js`, viewport 390 x 844. |
 | Mise a jour atomique du stockage | Les changements passent par `upd(fn)` et ne remplacent l'etat en memoire que si `localStorage` accepte l'ecriture. | Fait | Haute | Evite les pertes d'etat en cas d'erreur de stockage. |
@@ -1153,8 +1162,9 @@ Ce tableau est le suivi officiel des sujets techniques, d'architecture, de quali
 | Suppression des dependances externes runtime | La livraison ne doit pas dependre de scripts, CSS, CDN ou polices externes. | Fait | Haute | Test dedie : aucun script externe, aucun lien CSS externe. |
 | Service worker autonome | Cache de `./`, `index.html` et `sw.js`, navigation network-first puis fallback cache. | Fait | Haute | `sw.js`, cache prefixe `scorekeeper-`. |
 | Nettoyage des anciens caches | A l'activation, les anciens caches ScoreKeeper sont supprimes. | Fait | Haute | Evite les conflits entre versions. |
-| Version forcee dans les deux fichiers | `APP_VERSION` existe dans `index.html` et `sw.js` pour forcer les mises a jour. | Fait | Haute | Derniere version : `V20260618 23H39`. |
+| Version forcee dans les deux fichiers | `APP_VERSION` existe dans `index.html` et `sw.js` pour forcer les mises a jour. | Fait | Haute | Derniere version : `V20260618 23H59`. |
 | Mise a jour du cache attendu en test | Quand `APP_VERSION` change, `currentCacheName` doit changer aussi dans le test service worker. | Fait | Haute | Regle documentee dans le README. |
+| Activation guidee du service worker | Une nouvelle version installee attend le clic utilisateur, puis l'app envoie `SKIP_WAITING` et recharge apres `controllerchange`. | Fait | Haute | Version `V20260618 23H59`. |
 | Manifest PWA dynamique | Le manifest est genere dans `index.html` sous forme de Blob. | Fait | Moyenne | Pas de fichier `manifest.json` separe. |
 | Application monofichier | Toute la logique, le style, les themes, QR Code et manifest sont dans `index.html`. | Fait | Moyenne | Choix assume pour simplifier le deploiement. |
 | Refactor score par manche | Centralisation de la mise a jour/suppression d'un score par manche. | Fait | Haute | `updatePlayerRoundScore(...)`, evite les doublons. |
@@ -1183,7 +1193,7 @@ Ce tableau est le suivi officiel des sujets lies a l'usage, aux parcours joueur,
 | Blocage si informations manquantes | Le bouton de demarrage reste desactive tant qu'il manque un jeu ou un joueur. | Fait | Haute | Verrou comportemental existant. |
 | Blocage si partie active | On ne peut pas demarrer une nouvelle partie tant qu'une partie est en cours. | Fait | Haute | Evite d'ecraser `current`. |
 | Selection des joueurs | Selection via modale, avec filtres par groupe. | Fait | Haute | Groupes : famille, amis, travail. |
-| Reordonner les joueurs | Les joueurs selectionnes peuvent etre reordonnes par glisser/deposer. | Fait | Moyenne | Indication visible sur l'accueil. |
+| Reordonner les joueurs | Les joueurs selectionnes peuvent etre reordonnes avec des boutons monter/descendre. | Fait | Haute | Plus fiable sur mobile, version `V20260618 23H59`. |
 | Saisie des scores | Saisie via pave numerique tactile. | Fait | Haute | `showNumpad(player)`. |
 | Scores negatifs | Le bouton `±` permet de saisir un score negatif. | Fait | Haute | Couvert par test. |
 | Modification d'un score existant | Cliquer un joueur deja saisi permet de modifier son score. | Fait | Haute | Evite les doublons de manche. |

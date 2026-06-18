@@ -298,6 +298,35 @@ h1{font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(--text)}
   display:flex;align-items:center;justify-content:space-between;
 }
 
+/* UPDATE PROMPT */
+.update-prompt{
+  position:fixed;left:14px;right:14px;bottom:calc(82px + var(--safe-bot));
+  z-index:90;background:var(--surface);color:var(--text);
+  border:1.5px solid var(--border);border-radius:18px;
+  padding:13px;display:flex;align-items:center;gap:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.18)
+}
+.update-prompt strong{display:block;font-size:14px;margin-bottom:2px}
+.update-prompt span{display:block;font-size:12px;color:var(--muted);line-height:1.35}
+.update-prompt .btn{margin-left:auto;white-space:nowrap}
+.update-dismiss{
+  width:30px;height:30px;border-radius:9px;border:1.5px solid var(--border);
+  background:var(--surface2);color:var(--muted);font-size:16px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  flex-shrink:0
+}
+
+/* PLAYER ORDER */
+.player-order-actions{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.player-order-btn{
+  width:30px;height:30px;border-radius:9px;border:1.5px solid var(--border);
+  background:var(--surface2);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:800;cursor:pointer;
+  box-shadow:var(--shadow)
+}
+.player-order-btn:disabled{opacity:.32;cursor:default;box-shadow:none}
+
 /* ROUND PILL */
 .rpill{
   display:inline-flex;align-items:center;gap:6px;
@@ -1046,7 +1075,7 @@ h1{font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(--text)}
 <script>
 
 // ── VERSION ─────────────────────────────────────────────────
-const APP_VERSION = 'V20260618 23H39';
+const APP_VERSION = 'V20260618 23H59';
 
 // ── THEMES ─────────────────────────────────────────────────
 const THEMES = [
@@ -1648,6 +1677,79 @@ function buildHome(pg){
     pl.innerHTML="";
 
     function buildRows(){
+      pl.innerHTML="";
+      selPlayers.forEach((p,idx)=>{
+        const row=document.createElement("div");
+        row.className="drag-row";
+        row.dataset.idx=idx;
+        row.style.cssText="display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--surface);border-radius:11px;margin-bottom:7px;border:1.5px solid var(--border);transition:border-color .15s,box-shadow .15s;position:relative";
+
+        const num=document.createElement("div");
+        num.className="drag-number";
+        num.style.cssText="width:22px;height:22px;border-radius:7px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0";
+        num.textContent=idx+1;
+
+        const av=document.createElement("div");
+        av.className=avClass(p);av.textContent=p.emoji;
+
+        const name=document.createElement("span");
+        name.className="drag-name";
+        name.style.cssText="flex:1;font-weight:600;font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
+        name.textContent=p.name;
+
+        const orderActions=document.createElement("div");
+        orderActions.className="player-order-actions drag-handle";
+
+        const upBtn=document.createElement("button");
+        upBtn.type="button";
+        upBtn.className="player-order-btn";
+        upBtn.textContent="↑";
+        upBtn.setAttribute("aria-label","Monter "+p.name);
+        upBtn.disabled=idx===0;
+        upBtn.onclick=e=>{
+          e.stopPropagation();
+          if(idx===0)return;
+          const moved=selPlayers.splice(idx,1)[0];
+          selPlayers.splice(idx-1,0,moved);
+          buildRows();updateBtn();
+        };
+
+        const downBtn=document.createElement("button");
+        downBtn.type="button";
+        downBtn.className="player-order-btn";
+        downBtn.textContent="↓";
+        downBtn.setAttribute("aria-label","Descendre "+p.name);
+        downBtn.disabled=idx===selPlayers.length-1;
+        downBtn.onclick=e=>{
+          e.stopPropagation();
+          if(idx===selPlayers.length-1)return;
+          const moved=selPlayers.splice(idx,1)[0];
+          selPlayers.splice(idx+1,0,moved);
+          buildRows();updateBtn();
+        };
+
+        orderActions.appendChild(upBtn);
+        orderActions.appendChild(downBtn);
+
+        const rb=document.createElement("button");
+        rb.className="drag-remove";
+        rb.style.cssText="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;flex-shrink:0";
+        rb.textContent="×";
+        rb.setAttribute("aria-label","Retirer "+p.name);
+        rb.onclick=e=>{e.stopPropagation();selPlayers=selPlayers.filter(x=>x.id!==p.id);buildRows();updateBtn();};
+
+        row.appendChild(num);row.appendChild(av);row.appendChild(name);row.appendChild(orderActions);row.appendChild(rb);
+        pl.appendChild(row);
+      });
+      if(selPlayers.length>1){
+        const hint=document.createElement("div");
+        hint.className="drag-hint";
+        hint.style.cssText="text-align:center;font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:.02em";
+        hint.textContent="Utiliser les flèches pour changer l'ordre de jeu";
+        pl.appendChild(hint);
+      }
+      return;
+
       pl.innerHTML="";
       selPlayers.forEach((p,idx)=>{
         const row=document.createElement("div");
@@ -2949,8 +3051,52 @@ goTab("home");
 
 // ── SERVICE WORKER ────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
+  let waitingWorker = null;
+  let updatePromptShown = false;
+
+  function showUpdatePrompt(worker){
+    waitingWorker = worker;
+    if(updatePromptShown || document.querySelector(".update-prompt"))return;
+    updatePromptShown = true;
+    const prompt=div("update-prompt");
+    prompt.innerHTML=`<div><strong>Nouvelle version disponible</strong><span>Appuyer pour activer ${APP_VERSION}.</span></div>`;
+    const dismissBtn=el("button","update-dismiss","×",{"aria-label":"Masquer la mise \u00e0 jour"});
+    dismissBtn.onclick=()=>prompt.remove();
+    const updateBtn=btn("btn btn-p btn-sm","Mettre Ã  jour",()=>{
+      if(waitingWorker)waitingWorker.postMessage({type:"SKIP_WAITING"});
+      updateBtn.disabled=true;
+      updateBtn.textContent="Mise Ã  jour...";
+    });
+    updateBtn.textContent="Mettre \u00e0 jour";
+    prompt.appendChild(dismissBtn);
+    prompt.appendChild(updateBtn);
+    document.body.appendChild(prompt);
+  }
+
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if(refreshing)return;
+    refreshing = true;
+    window.location.reload();
+  });
+
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js')
+      .then(reg => {
+        if(reg.waiting && navigator.serviceWorker.controller){
+          showUpdatePrompt(reg.waiting);
+        }
+        reg.addEventListener("updatefound", () => {
+          const worker = reg.installing;
+          if(!worker)return;
+          worker.addEventListener("statechange", () => {
+            if(worker.state === "installed" && navigator.serviceWorker.controller){
+              showUpdatePrompt(worker);
+            }
+          });
+        });
+        return reg;
+      })
       .then(reg => console.log('[SW] Enregistré :', reg.scope))
       .catch(err => console.warn('[SW] Échec enregistrement :', err));
   });

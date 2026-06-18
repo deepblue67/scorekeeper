@@ -1,7 +1,7 @@
 // ── ScoreKeeper Service Worker ────────────────────────────────
 // À placer à la RACINE du dépôt GitHub (même niveau qu'index.html)
 
-const APP_VERSION = 'V20260618 23H39';
+const APP_VERSION = 'V20260618 23H59';
 const CACHE_PREFIX = 'scorekeeper-';
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
 const APP_SHELL = './index.html';
@@ -49,8 +49,13 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(CORE_ASSETS))
-      .then(() => self.skipWaiting())
   );
+});
+
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    event.waitUntil(self.skipWaiting());
+  }
 });
 
 self.addEventListener('activate', event => {
