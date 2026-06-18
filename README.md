@@ -1,6 +1,6 @@
 # ScoreKeeper
 
-Documentation de reprise de l'application ScoreKeeper.
+Documentation de reprise et carnet de bord officiel de l'application ScoreKeeper.
 
 Ce fichier sert deux objectifs :
 
@@ -9,9 +9,43 @@ Ce fichier sert deux objectifs :
 
 Derniere version documentee : `V20260612 00H12`.
 
+Derniere mise a jour du README : 2026-06-18.
+
 Fichiers de production a deployer : `index.html` et `sw.js`.
 
 Les autres fichiers (`tests`, `scripts`, `package.json`, `playwright.config.js`, `node_modules`, etc.) servent uniquement au travail local et aux tests. Ils ne sont pas necessaires pour utiliser l'application en production.
+
+## Role Officiel De Ce README
+
+A partir du 2026-06-18, ce fichier est le carnet de bord officiel du projet.
+
+Il doit etre mis a jour a chaque evolution, meme petite, afin de rester utile :
+
+- a Christophe, pour comprendre et se rememorer le fonctionnement de l'application ;
+- a Codex, pour reprendre le projet rapidement sans redecouvrir toute l'architecture ;
+- a toute personne qui regarderait le depot GitHub.
+
+A chaque modification future, mettre a jour au minimum :
+
+- la description de ce qui existe si le comportement change ;
+- la version documentee si `index.html` ou `sw.js` changent ;
+- le nombre de tests si la suite evolue ;
+- l'historique des evolutions ;
+- les tableaux de suivi en fin de fichier ;
+- le statut, la priorite et la version/remarque des sujets concernes.
+
+Les deux tableaux de suivi officiels sont :
+
+- `Technique et architecture` ;
+- `Gameplay et usage`.
+
+Chaque ligne de tableau doit indiquer :
+
+- le sujet ;
+- la description ;
+- le statut : `Fait`, `A faire`, `Moyen terme`, `A eviter pour l'instant`, etc. ;
+- la priorite ;
+- la version ou une remarque.
 
 ## Resume Du Projet
 
@@ -1068,3 +1102,87 @@ Lire dans cet ordre :
 5. `tests/service-worker.unit.test.js`.
 
 Regle d'or : ScoreKeeper fonctionne deja comme souhaite. Toute evolution doit etre une amelioration ciblee, verifiee par tests, et sans regression fonctionnelle.
+
+## Tableau De Suivi - Technique Et Architecture
+
+Ce tableau est le suivi officiel des sujets techniques, d'architecture, de qualite, de securite, de tests et de deploiement.
+
+| Sujet | Description | Statut | Priorite | Version / remarque |
+|---|---|---:|---:|---|
+| Revue de code initiale | Lecture de l'application existante pour comprendre son fonctionnement avant modification. | Fait | Haute | Realise au debut de la conversation. |
+| Ne pas modifier les originaux | Les fichiers originaux dans `Downloads` ne doivent pas etre modifies directement. La livraison travaillee est dans `outputs/scorekeeper`. | Fait | Haute | Regle de travail conservee. |
+| Fichiers de production minimaux | L'application deployee a besoin uniquement de `index.html` et `sw.js`. | Fait | Haute | README recommande aussi de versionner les tests/outils sur GitHub. |
+| Depot GitHub complet hors `node_modules` | Pour garder le README coherent et conserver les tests, versionner tout le dossier sauf `node_modules`. | Fait | Moyenne | Structure recommandee : `index.html`, `sw.js`, `README.md`, `package*.json`, `playwright.config.js`, `scripts/`, `tests/`, `.gitignore`. |
+| Tests Playwright de caracterisation | Ajout de tests navigateur pour verrouiller les parcours principaux. | Fait | Haute | 13 tests Playwright dans `tests/scorekeeper.spec.js`. |
+| Tests unitaires service worker | Ajout de tests dedies au cache et au comportement hors ligne. | Fait | Haute | 6 tests dans `tests/service-worker.unit.test.js`. |
+| Total de tests | Suite actuelle composee de tests fonctionnels et service worker. | Fait | Haute | 19 tests valides sur `V20260612 00H12`. |
+| Serveur local de test | Ajout d'un serveur Node local pour tester l'application sans cache parasite. | Fait | Moyenne | `scripts/serve.mjs`, port `4173`. |
+| Configuration Playwright | Tests en viewport mobile Chrome, service workers bloques dans les tests UI. | Fait | Moyenne | `playwright.config.js`, viewport 390 x 844. |
+| Mise a jour atomique du stockage | Les changements passent par `upd(fn)` et ne remplacent l'etat en memoire que si `localStorage` accepte l'ecriture. | Fait | Haute | Evite les pertes d'etat en cas d'erreur de stockage. |
+| Validation des imports | Les imports sont controles avant remplacement des donnees. | Fait | Haute | `validateImportData(data)`. |
+| Sauvegarde avant import | Avant import valide, l'ancien etat est conserve dans `sk_v3_backup`. | Fait | Haute | Permet de recuperer les donnees precedentes si besoin. |
+| Protection XSS | Echappement des valeurs utilisateur ou stockees avant insertion HTML. | Fait | Haute | Fonction `esc(value)` + test Playwright dedie. |
+| QR Code autonome | La librairie QR Code est integree dans `index.html` pour supprimer la dependance reseau. | Fait | Haute | Export QR disponible hors ligne. |
+| Suppression des dependances externes runtime | La livraison ne doit pas dependre de scripts, CSS, CDN ou polices externes. | Fait | Haute | Test dedie : aucun script externe, aucun lien CSS externe. |
+| Service worker autonome | Cache de `./`, `index.html` et `sw.js`, navigation network-first puis fallback cache. | Fait | Haute | `sw.js`, cache prefixe `scorekeeper-`. |
+| Nettoyage des anciens caches | A l'activation, les anciens caches ScoreKeeper sont supprimes. | Fait | Haute | Evite les conflits entre versions. |
+| Version forcee dans les deux fichiers | `APP_VERSION` existe dans `index.html` et `sw.js` pour forcer les mises a jour. | Fait | Haute | Derniere version : `V20260612 00H12`. |
+| Mise a jour du cache attendu en test | Quand `APP_VERSION` change, `currentCacheName` doit changer aussi dans le test service worker. | Fait | Haute | Regle documentee dans le README. |
+| Manifest PWA dynamique | Le manifest est genere dans `index.html` sous forme de Blob. | Fait | Moyenne | Pas de fichier `manifest.json` separe. |
+| Application monofichier | Toute la logique, le style, les themes, QR Code et manifest sont dans `index.html`. | Fait | Moyenne | Choix assume pour simplifier le deploiement. |
+| Refactor score par manche | Centralisation de la mise a jour/suppression d'un score par manche. | Fait | Haute | `updatePlayerRoundScore(...)`, evite les doublons. |
+| Themes isoles par `data-theme` | Les styles specifiques aux themes modernes sont scopes pour ne pas casser les autres. | Fait | Haute | `teal` et `mercure` utilisent des blocs dedies. |
+| Theme Teal Soft Modern | Refonte visuelle claire du theme Teal sans toucher aux autres themes. | Fait | Moyenne | Version autour de `V20260611 23H43`. |
+| Theme Mercure | Ajout puis correction d'un theme chrome/acier/mercure plus proche de la maquette. | Fait | Moyenne | Version finale documentee : `V20260612 00H12`. |
+| README comme carnet officiel | Le README doit etre mis a jour a chaque evolution. | Fait | Haute | Ajoute le 2026-06-18. |
+| Tableaux de suivi officiels | Ajout de deux tableaux : technique/architecture et gameplay/usage. | Fait | Haute | Ajoute le 2026-06-18. |
+| Separation future du code | Extraire JS/CSS dans des fichiers separes pour faciliter la maintenance. | Moyen terme | Moyenne | A evaluer seulement si le deploiement accepte plus que deux fichiers. |
+| Migration de donnees versionnee | Ajouter une vraie couche de migration si le schema `sk_v3` evolue. | Moyen terme | Haute si schema modifie | A faire avant tout changement incompatible de donnees. |
+| Sauvegarde/restauration plus visible | Ajouter une interface pour restaurer `sk_v3_backup`. | A faire | Moyenne | Utile apres import, non fait. |
+| Synchronisation cloud | Synchronisation multi-appareils automatique. | A eviter pour l'instant | Basse | Complexifie fortement : backend, comptes, securite. |
+| Authentification utilisateur | Comptes utilisateurs et connexion. | A eviter pour l'instant | Basse | Hors besoin actuel. |
+| Base de donnees distante | Stockage serveur des parties. | A eviter pour l'instant | Basse | L'application est volontairement locale/offline. |
+| Ajout de dependances runtime externes | CDN, Google Fonts, librairies chargees via internet. | A eviter pour l'instant | Haute | Casserait l'autonomie et la simplicite. |
+
+## Tableau De Suivi - Gameplay Et Usage
+
+Ce tableau est le suivi officiel des sujets lies a l'usage, aux parcours joueur, aux ecrans, aux options visibles et a l'experience utilisateur.
+
+| Sujet | Description | Statut | Priorite | Version / remarque |
+|---|---|---:|---:|---|
+| Creation d'une partie | Choisir un jeu, une date et des joueurs, puis demarrer une partie. | Fait | Haute | Fonction principale de l'application. |
+| Blocage si informations manquantes | Le bouton de demarrage reste desactive tant qu'il manque un jeu ou un joueur. | Fait | Haute | Verrou comportemental existant. |
+| Blocage si partie active | On ne peut pas demarrer une nouvelle partie tant qu'une partie est en cours. | Fait | Haute | Evite d'ecraser `current`. |
+| Selection des joueurs | Selection via modale, avec filtres par groupe. | Fait | Haute | Groupes : famille, amis, travail. |
+| Reordonner les joueurs | Les joueurs selectionnes peuvent etre reordonnes par glisser/deposer. | Fait | Moyenne | Indication visible sur l'accueil. |
+| Saisie des scores | Saisie via pave numerique tactile. | Fait | Haute | `showNumpad(player)`. |
+| Scores negatifs | Le bouton `±` permet de saisir un score negatif. | Fait | Haute | Couvert par test. |
+| Modification d'un score existant | Cliquer un joueur deja saisi permet de modifier son score. | Fait | Haute | Evite les doublons de manche. |
+| Suppression d'un score | Un score deja saisi peut etre supprime et le total est recalcule. | Fait | Haute | Couvert par test. |
+| Detail par manche | Onglet Detail avec modification possible depuis le tableau. | Fait | Moyenne | Couvert par test. |
+| Classement | Onglet Classement pendant la partie. | Fait | Moyenne | Tri par total decroissant. |
+| Navigation de manches | Aller a la manche precedente ou suivante. | Fait | Haute | Boutons de navigation autour de la manche courante. |
+| Indicateur de progression de manche | Affiche combien de joueurs ont saisi leur score pour la manche. | Fait | Moyenne | Exemple : `0/2 ont saisi`. |
+| Fin de partie | Terminer une partie et l'envoyer dans l'historique. | Fait | Haute | Confirmation avec gagnant. |
+| Historique persistant | Les parties terminees restent visibles apres rechargement. | Fait | Haute | Couvert par test. |
+| Statistiques | Statistiques par joueur et par jeu depuis l'historique. | Fait | Moyenne | Pages `stats`. |
+| Gestion des joueurs | Ajouter, modifier, supprimer des joueurs depuis Reglages. | Fait | Haute | Ajout et edition couverts par tests. |
+| Gestion des jeux | Ajouter des jeux personnalises. | Fait | Moyenne | Couvert par test de persistance. |
+| Groupes de joueurs | Associer des joueurs a Famille, Amis, Travail. | Fait | Moyenne | Utilise pour filtrer la selection. |
+| Export QR Code | Export des donnees via QR Code quand la taille le permet. | Fait | Moyenne | QR integre localement. |
+| Export texte | Export alternatif sous forme de code texte `SK1:...`. | Fait | Moyenne | Utile si QR trop volumineux. |
+| Import de donnees | Importer un export valide et remplacer les donnees actuelles. | Fait | Haute | Avec validation et sauvegarde prealable. |
+| Themes visuels | Choisir un theme dans Reglages > Apparence. | Fait | Moyenne | 13 themes disponibles. |
+| Persistance du theme | Le theme choisi reste actif apres rechargement. | Fait | Moyenne | Couvert par test. |
+| Refonte visuelle Teal | Apparence plus moderne, claire et tactile. | Fait | Moyenne | Corrigee apres ecart avec la maquette. |
+| Theme Mercure | Theme chrome/acier/mercure inspire d'une maquette visuelle. | Fait | Moyenne | Corrige pour correspondre davantage a la proposition. |
+| Application offline | L'application peut etre utilisee sans reseau apres cache. | Fait | Haute | Service worker + absence de dependance externe. |
+| Affichage de la version | La version est visible dans Reglages. | Fait | Moyenne | Pratique pour verifier une livraison. |
+| Restaurer la sauvegarde d'import | Ajouter un bouton de restauration depuis `sk_v3_backup`. | A faire | Moyenne | Sujet gameplay/securite utile. |
+| Mode export fichier | Exporter/importer via fichier local en plus du QR/texte. | Moyen terme | Moyenne | Pour gros historiques, plus confortable que QR. |
+| Recherche dans l'historique | Ajouter une recherche par jeu, joueur ou date. | Moyen terme | Basse | Utile si beaucoup de parties. |
+| Filtre statistiques avance | Filtrer les stats par periode, jeu ou groupe. | Moyen terme | Basse | A envisager apres usage reel. |
+| Annuler la derniere action | Undo simple apres saisie/modification de score. | Moyen terme | Moyenne | Interessant, mais a concevoir prudemment. |
+| Modeles de regles par jeu | Regles de scoring specifiques selon le jeu. | A eviter pour l'instant | Basse | Risque de complexifier l'application. |
+| Synchronisation automatique multi-appareils | Partage en temps reel entre appareils. | A eviter pour l'instant | Basse | Hors philosophie locale/offline actuelle. |
+| Comptes utilisateurs | Gestion de profils connectes. | A eviter pour l'instant | Basse | Non necessaire au besoin actuel. |
