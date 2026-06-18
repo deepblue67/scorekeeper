@@ -7,7 +7,7 @@ Ce fichier sert deux objectifs :
 - aider Christophe a se rappeler comment fonctionne l'application ;
 - donner a Codex, ou a tout autre intervenant, le contexte necessaire pour reprendre le projet sans repartir de zero.
 
-Derniere version documentee : `V20260612 00H12`.
+Derniere version documentee : `V20260618 21H37`.
 
 Derniere mise a jour du README : 2026-06-18.
 
@@ -335,7 +335,7 @@ Cette logique evite les doublons pour une meme manche.
 L'application utilise une constante :
 
 ```js
-const APP_VERSION = 'V20260612 00H12';
+const APP_VERSION = 'V20260618 21H37';
 ```
 
 Elle est presente dans :
@@ -357,7 +357,7 @@ const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
 Le test `tests/service-worker.unit.test.js` contient aussi le nom attendu du cache :
 
 ```js
-const currentCacheName = "scorekeeper-V20260612 00H12";
+const currentCacheName = "scorekeeper-V20260618 21H37";
 ```
 
 Quand on change `APP_VERSION`, il faut donc mettre a jour :
@@ -547,7 +547,7 @@ Cette fonction :
 - met a jour la couleur du navigateur ;
 - adapte les inputs de date.
 
-Themes disponibles dans la version `V20260612 00H12` :
+Themes disponibles dans la version `V20260618 21H37` :
 
 1. `material` - Material
 2. `teal` - Teal
@@ -771,7 +771,7 @@ viewport: { width: 390, height: 844 }
 
 ## Etat Des Tests
 
-Lors de la derniere validation de la version `V20260612 00H12` :
+Lors de la derniere validation de la version `V20260618 21H37` :
 
 - 13 tests Playwright reussis ;
 - 6 tests service worker reussis ;
@@ -858,7 +858,7 @@ VYYYYMMDD HHHH
 Exemple :
 
 ```text
-V20260612 00H12
+V20260618 21H37
 ```
 
 ### Toujours Lancer Les Tests
@@ -985,7 +985,7 @@ Elle a ensuite ete corrigee pour correspondre davantage a la proposition :
 La derniere version validee est :
 
 ```text
-V20260612 00H12
+V20260618 21H37
 ```
 
 Avec :
@@ -995,6 +995,19 @@ Avec :
 - aucun script externe ;
 - aucun lien CSS externe ;
 - fonctionnement hors ligne conserve.
+
+### 10. Passe De Lisibilite Des Themes
+
+Une passe visuelle ciblee a ete faite apres retour d'usage sur mobile.
+
+Objectif :
+
+- rendre les zones de saisie plus evidentes ;
+- renforcer les contours des cartes, champs, onglets et lignes de score ;
+- ameliorer la lisibilite des textes secondaires et placeholders ;
+- corriger l'effet trop ton sur ton de certains themes, en particulier les themes sombres.
+
+Cette evolution ne change pas les fonctionnalites, le stockage, l'import/export ni le fonctionnement hors ligne.
 
 ## Points Connus Et Limites
 
@@ -1115,7 +1128,7 @@ Ce tableau est le suivi officiel des sujets techniques, d'architecture, de quali
 | Depot GitHub complet hors `node_modules` | Pour garder le README coherent et conserver les tests, versionner tout le dossier sauf `node_modules`. | Fait | Moyenne | Structure recommandee : `index.html`, `sw.js`, `README.md`, `package*.json`, `playwright.config.js`, `scripts/`, `tests/`, `.gitignore`. |
 | Tests Playwright de caracterisation | Ajout de tests navigateur pour verrouiller les parcours principaux. | Fait | Haute | 13 tests Playwright dans `tests/scorekeeper.spec.js`. |
 | Tests unitaires service worker | Ajout de tests dedies au cache et au comportement hors ligne. | Fait | Haute | 6 tests dans `tests/service-worker.unit.test.js`. |
-| Total de tests | Suite actuelle composee de tests fonctionnels et service worker. | Fait | Haute | 19 tests valides sur `V20260612 00H12`. |
+| Total de tests | Suite actuelle composee de tests fonctionnels et service worker. | Fait | Haute | 19 tests valides sur `V20260618 21H37`. |
 | Serveur local de test | Ajout d'un serveur Node local pour tester l'application sans cache parasite. | Fait | Moyenne | `scripts/serve.mjs`, port `4173`. |
 | Configuration Playwright | Tests en viewport mobile Chrome, service workers bloques dans les tests UI. | Fait | Moyenne | `playwright.config.js`, viewport 390 x 844. |
 | Mise a jour atomique du stockage | Les changements passent par `upd(fn)` et ne remplacent l'etat en memoire que si `localStorage` accepte l'ecriture. | Fait | Haute | Evite les pertes d'etat en cas d'erreur de stockage. |
@@ -1126,7 +1139,7 @@ Ce tableau est le suivi officiel des sujets techniques, d'architecture, de quali
 | Suppression des dependances externes runtime | La livraison ne doit pas dependre de scripts, CSS, CDN ou polices externes. | Fait | Haute | Test dedie : aucun script externe, aucun lien CSS externe. |
 | Service worker autonome | Cache de `./`, `index.html` et `sw.js`, navigation network-first puis fallback cache. | Fait | Haute | `sw.js`, cache prefixe `scorekeeper-`. |
 | Nettoyage des anciens caches | A l'activation, les anciens caches ScoreKeeper sont supprimes. | Fait | Haute | Evite les conflits entre versions. |
-| Version forcee dans les deux fichiers | `APP_VERSION` existe dans `index.html` et `sw.js` pour forcer les mises a jour. | Fait | Haute | Derniere version : `V20260612 00H12`. |
+| Version forcee dans les deux fichiers | `APP_VERSION` existe dans `index.html` et `sw.js` pour forcer les mises a jour. | Fait | Haute | Derniere version : `V20260618 21H37`. |
 | Mise a jour du cache attendu en test | Quand `APP_VERSION` change, `currentCacheName` doit changer aussi dans le test service worker. | Fait | Haute | Regle documentee dans le README. |
 | Manifest PWA dynamique | Le manifest est genere dans `index.html` sous forme de Blob. | Fait | Moyenne | Pas de fichier `manifest.json` separe. |
 | Application monofichier | Toute la logique, le style, les themes, QR Code et manifest sont dans `index.html`. | Fait | Moyenne | Choix assume pour simplifier le deploiement. |
@@ -1134,6 +1147,7 @@ Ce tableau est le suivi officiel des sujets techniques, d'architecture, de quali
 | Themes isoles par `data-theme` | Les styles specifiques aux themes modernes sont scopes pour ne pas casser les autres. | Fait | Haute | `teal` et `mercure` utilisent des blocs dedies. |
 | Theme Teal Soft Modern | Refonte visuelle claire du theme Teal sans toucher aux autres themes. | Fait | Moyenne | Version autour de `V20260611 23H43`. |
 | Theme Mercure | Ajout puis correction d'un theme chrome/acier/mercure plus proche de la maquette. | Fait | Moyenne | Version finale documentee : `V20260612 00H12`. |
+| Lisibilite des themes | Renforcement global des bordures, champs, textes secondaires et contrastes, avec attention particuliere aux themes sombres. | Fait | Haute | Version `V20260618 21H37`. |
 | README comme carnet officiel | Le README doit etre mis a jour a chaque evolution. | Fait | Haute | Ajoute le 2026-06-18. |
 | Tableaux de suivi officiels | Ajout de deux tableaux : technique/architecture et gameplay/usage. | Fait | Haute | Ajoute le 2026-06-18. |
 | Separation future du code | Extraire JS/CSS dans des fichiers separes pour faciliter la maintenance. | Moyen terme | Moyenne | A evaluer seulement si le deploiement accepte plus que deux fichiers. |
@@ -1176,6 +1190,7 @@ Ce tableau est le suivi officiel des sujets lies a l'usage, aux parcours joueur,
 | Persistance du theme | Le theme choisi reste actif apres rechargement. | Fait | Moyenne | Couvert par test. |
 | Refonte visuelle Teal | Apparence plus moderne, claire et tactile. | Fait | Moyenne | Corrigee apres ecart avec la maquette. |
 | Theme Mercure | Theme chrome/acier/mercure inspire d'une maquette visuelle. | Fait | Moyenne | Corrige pour correspondre davantage a la proposition. |
+| Confort de saisie visuelle | Les cartes, champs, lignes joueur, onglets et textes secondaires sont plus marques pour eviter l'effet ton sur ton. | Fait | Haute | Passe de lisibilite `V20260618 21H37`. |
 | Application offline | L'application peut etre utilisee sans reseau apres cache. | Fait | Haute | Service worker + absence de dependance externe. |
 | Affichage de la version | La version est visible dans Reglages. | Fait | Moyenne | Pratique pour verifier une livraison. |
 | Restaurer la sauvegarde d'import | Ajouter un bouton de restauration depuis `sk_v3_backup`. | A faire | Moyenne | Sujet gameplay/securite utile. |
