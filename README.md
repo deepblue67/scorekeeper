@@ -1225,7 +1225,7 @@ Ce tableau est le suivi officiel des sujets techniques, d'architecture, de quali
 | Tableaux de suivi officiels | Ajout de deux tableaux : technique/architecture et gameplay/usage. | Fait | Haute | Ajoute le 2026-06-18. |
 | Separation future du code | Extraire JS/CSS dans des fichiers separes pour faciliter la maintenance. | Moyen terme | Moyenne | A evaluer seulement si le deploiement accepte plus que deux fichiers. |
 | Migration de donnees versionnee | Ajouter une vraie couche de migration si le schema `sk_v3` evolue. | Moyen terme | Haute si schema modifie | A faire avant tout changement incompatible de donnees. |
-| Sauvegarde/restauration plus visible | Ajouter une interface pour restaurer `sk_v3_backup`. | A faire | Moyenne | Utile apres import, non fait. |
+| Sauvegarde/restauration plus visible | Ajouter une interface pour restaurer `sk_v3_backup`. | A faire | Haute | Priorite conseillee apres l'historique : rassure avant/apres import. |
 | Synchronisation cloud | Synchronisation multi-appareils automatique. | A eviter pour l'instant | Basse | Complexifie fortement : backend, comptes, securite. |
 | Authentification utilisateur | Comptes utilisateurs et connexion. | A eviter pour l'instant | Basse | Hors besoin actuel. |
 | Base de donnees distante | Stockage serveur des parties. | A eviter pour l'instant | Basse | L'application est volontairement locale/offline. |
@@ -1270,11 +1270,12 @@ Ce tableau est le suivi officiel des sujets lies a l'usage, aux parcours joueur,
 | Application offline | L'application peut etre utilisee sans reseau apres cache. | Fait | Haute | Service worker + absence de dependance externe. |
 | Affichage de la version | La version est visible dans Reglages, dans la carte Application. | Fait | Moyenne | Version `V20260618 23H39`. |
 | Ordre des reglages | Les reglages affichent Application, puis Joueurs, puis Apparence avant les autres sections. | Fait | Moyenne | Version `V20260618 23H39`. |
-| Restaurer la sauvegarde d'import | Ajouter un bouton de restauration depuis `sk_v3_backup`. | A faire | Moyenne | Sujet gameplay/securite utile. |
-| Mode export fichier | Exporter/importer via fichier local en plus du QR/texte. | Moyen terme | Moyenne | Pour gros historiques, plus confortable que QR. |
-| Recherche dans l'historique | Ajouter une recherche plus avancee par joueur ou date. | Moyen terme | Basse | La recherche par libelle/jeu existe deja. |
-| Filtre statistiques avance | Filtrer les stats par periode, jeu ou groupe. | Moyen terme | Basse | A envisager apres usage reel. |
-| Annuler la derniere action | Undo simple apres saisie/modification de score. | Moyen terme | Moyenne | Interessant, mais a concevoir prudemment. |
+| Restaurer la sauvegarde d'import | Ajouter un bouton de restauration depuis `sk_v3_backup`. | A faire | Haute | Deuxieme amelioration conseillee : securise les manipulations de donnees. |
+| Mode export fichier | Exporter/importer via fichier local en plus du QR/texte. | Moyen terme | Moyenne | Utile pour gros historiques et sauvegardes longues, sans remplacer QR/texte. |
+| Recherche et filtres dans l'historique | Ajouter des filtres par joueur, jeu, periode, gagnant et libelle de partie. | Moyen terme | Haute | Premiere amelioration conseillee pour rendre un gros historique vraiment exploitable. |
+| Statistiques enrichies | Ajouter victoires par joueur, moyenne, meilleur score, regularite et classement par jeu. | Moyen terme | Moyenne | A faire apres les filtres d'historique, car les stats s'appuient sur ces donnees. |
+| Filtre statistiques avance | Filtrer les stats par periode, jeu, joueur ou groupe. | Moyen terme | Moyenne | A envisager avec les statistiques enrichies. |
+| Annuler la derniere action | Undo simple apres saisie/modification/suppression de score. | Moyen terme | Moyenne | Tres utile en saisie, mais a concevoir prudemment pour rester fiable. |
 | Modeles de regles par jeu | Regles de scoring specifiques selon le jeu. | A eviter pour l'instant | Basse | Risque de complexifier l'application. |
 | Synchronisation automatique multi-appareils | Partage en temps reel entre appareils. | A eviter pour l'instant | Basse | Hors philosophie locale/offline actuelle. |
 | Comptes utilisateurs | Gestion de profils connectes. | A eviter pour l'instant | Basse | Non necessaire au besoin actuel. |
