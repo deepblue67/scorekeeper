@@ -7,7 +7,7 @@ Ce fichier sert deux objectifs :
 - aider Christophe a se rappeler comment fonctionne l'application ;
 - donner a Codex, ou a tout autre intervenant, le contexte necessaire pour reprendre le projet sans repartir de zero.
 
-Derniere version documentee : `V20260618 23H59`.
+Derniere version documentee : `V20260619 12H31`.
 
 Derniere mise a jour du README : 2026-06-18.
 
@@ -335,7 +335,7 @@ Cette logique evite les doublons pour une meme manche.
 L'application utilise une constante :
 
 ```js
-const APP_VERSION = 'V20260618 23H59';
+const APP_VERSION = 'V20260619 12H31';
 ```
 
 Elle est presente dans :
@@ -357,7 +357,7 @@ const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
 Le test `tests/service-worker.unit.test.js` contient aussi le nom attendu du cache :
 
 ```js
-const currentCacheName = "scorekeeper-V20260618 23H59";
+const currentCacheName = "scorekeeper-V20260619 12H31";
 ```
 
 Quand on change `APP_VERSION`, il faut donc mettre a jour :
@@ -548,7 +548,7 @@ Cette fonction :
 - met a jour la couleur du navigateur ;
 - adapte les inputs de date.
 
-Themes disponibles dans la version `V20260618 23H59` :
+Themes disponibles dans la version `V20260619 12H31` :
 
 1. `material` - Material
 2. `teal` - Teal
@@ -772,11 +772,11 @@ viewport: { width: 390, height: 844 }
 
 ## Etat Des Tests
 
-Lors de la derniere validation de la version `V20260618 23H59` :
+Lors de la derniere validation de la version `V20260619 12H31` :
 
-- 14 tests Playwright reussis ;
+- 15 tests Playwright reussis ;
 - 7 tests service worker reussis ;
-- total : 21 tests reussis.
+- total : 22 tests reussis.
 
 Commandes utilisees :
 
@@ -856,7 +856,7 @@ VYYYYMMDD HHHH
 Exemple :
 
 ```text
-V20260618 23H59
+V20260619 12H31
 ```
 
 ### Toujours Lancer Les Tests
@@ -983,13 +983,13 @@ Elle a ensuite ete corrigee pour correspondre davantage a la proposition :
 La derniere version validee est :
 
 ```text
-V20260618 23H59
+V20260619 12H31
 ```
 
 Avec :
 
 - 13 themes disponibles ;
-- 21 tests reussis ;
+- 22 tests reussis ;
 - aucun script externe ;
 - aucun lien CSS externe ;
 - fonctionnement hors ligne conserve.
@@ -1031,6 +1031,17 @@ Deux ameliorations ciblees ont ete ajoutees :
 - l'ordre visible des joueurs reste l'ordre utilise au demarrage de la partie.
 
 Cette evolution conserve le stockage local, le mode hors ligne et les themes existants.
+
+### 13. Liste Joueurs Verticale Dans Les Themes Specifiques
+
+Correction visuelle apres retour sur le theme Teal :
+
+- la liste des joueurs selectionnes n'est plus forcee en grille deux colonnes ;
+- les themes Teal et Mercure affichent maintenant les joueurs les uns sous les autres ;
+- les boutons monter/descendre restent visibles dans chaque ligne ;
+- l'ordre de demarrage de la partie reste identique a l'ordre affiche.
+
+Cette correction ne change pas le stockage, les donnees ni le fonctionnement hors ligne.
 
 ## Points Connus Et Limites
 
@@ -1092,7 +1103,7 @@ Avant de livrer :
 - [ ] incrementer `APP_VERSION` dans `sw.js` ;
 - [ ] mettre a jour `currentCacheName` dans `tests/service-worker.unit.test.js` ;
 - [ ] lancer les 7 tests service worker ;
-- [ ] lancer les 14 tests Playwright ;
+- [ ] lancer les 15 tests Playwright ;
 - [ ] verifier qu'il n'y a pas de dependance externe ;
 - [ ] verifier visuellement les ecrans touches ;
 - [ ] deployer uniquement `index.html` et `sw.js`.
@@ -1149,9 +1160,9 @@ Ce tableau est le suivi officiel des sujets techniques, d'architecture, de quali
 | Ne pas modifier les originaux | Les fichiers originaux dans `Downloads` ne doivent pas etre modifies directement. La livraison travaillee est dans `outputs/scorekeeper`. | Fait | Haute | Regle de travail conservee. |
 | Fichiers de production minimaux | L'application deployee a besoin uniquement de `index.html` et `sw.js`. | Fait | Haute | README recommande aussi de versionner les tests/outils sur GitHub. |
 | Depot GitHub complet hors `node_modules` | Pour garder le README coherent et conserver les tests, versionner tout le dossier sauf `node_modules`. | Fait | Moyenne | Structure recommandee : `index.html`, `sw.js`, `README.md`, `package*.json`, `playwright.config.js`, `scripts/`, `tests/`, `.gitignore`. |
-| Tests Playwright de caracterisation | Ajout de tests navigateur pour verrouiller les parcours principaux. | Fait | Haute | 14 tests Playwright dans `tests/scorekeeper.spec.js`. |
+| Tests Playwright de caracterisation | Ajout de tests navigateur pour verrouiller les parcours principaux. | Fait | Haute | 15 tests Playwright dans `tests/scorekeeper.spec.js`. |
 | Tests unitaires service worker | Ajout de tests dedies au cache et au comportement hors ligne. | Fait | Haute | 7 tests dans `tests/service-worker.unit.test.js`. |
-| Total de tests | Suite actuelle composee de tests fonctionnels et service worker. | Fait | Haute | 21 tests valides sur `V20260618 23H59`. |
+| Total de tests | Suite actuelle composee de tests fonctionnels et service worker. | Fait | Haute | 22 tests valides sur `V20260619 12H31`. |
 | Serveur local de test | Ajout d'un serveur Node local pour tester l'application sans cache parasite. | Fait | Moyenne | `scripts/serve.mjs`, port `4173`. |
 | Configuration Playwright | Tests en viewport mobile Chrome, service workers bloques dans les tests UI. | Fait | Moyenne | `playwright.config.js`, viewport 390 x 844. |
 | Mise a jour atomique du stockage | Les changements passent par `upd(fn)` et ne remplacent l'etat en memoire que si `localStorage` accepte l'ecriture. | Fait | Haute | Evite les pertes d'etat en cas d'erreur de stockage. |
@@ -1162,7 +1173,7 @@ Ce tableau est le suivi officiel des sujets techniques, d'architecture, de quali
 | Suppression des dependances externes runtime | La livraison ne doit pas dependre de scripts, CSS, CDN ou polices externes. | Fait | Haute | Test dedie : aucun script externe, aucun lien CSS externe. |
 | Service worker autonome | Cache de `./`, `index.html` et `sw.js`, navigation network-first puis fallback cache. | Fait | Haute | `sw.js`, cache prefixe `scorekeeper-`. |
 | Nettoyage des anciens caches | A l'activation, les anciens caches ScoreKeeper sont supprimes. | Fait | Haute | Evite les conflits entre versions. |
-| Version forcee dans les deux fichiers | `APP_VERSION` existe dans `index.html` et `sw.js` pour forcer les mises a jour. | Fait | Haute | Derniere version : `V20260618 23H59`. |
+| Version forcee dans les deux fichiers | `APP_VERSION` existe dans `index.html` et `sw.js` pour forcer les mises a jour. | Fait | Haute | Derniere version : `V20260619 12H31`. |
 | Mise a jour du cache attendu en test | Quand `APP_VERSION` change, `currentCacheName` doit changer aussi dans le test service worker. | Fait | Haute | Regle documentee dans le README. |
 | Activation guidee du service worker | Une nouvelle version installee attend le clic utilisateur, puis l'app envoie `SKIP_WAITING` et recharge apres `controllerchange`. | Fait | Haute | Version `V20260618 23H59`. |
 | Manifest PWA dynamique | Le manifest est genere dans `index.html` sous forme de Blob. | Fait | Moyenne | Pas de fichier `manifest.json` separe. |
@@ -1171,6 +1182,7 @@ Ce tableau est le suivi officiel des sujets techniques, d'architecture, de quali
 | Themes isoles par `data-theme` | Les styles specifiques aux themes modernes sont scopes pour ne pas casser les autres. | Fait | Haute | `teal` et `mercure` utilisent des blocs dedies. |
 | Theme Teal Soft Modern | Refonte visuelle claire du theme Teal sans toucher aux autres themes. | Fait | Moyenne | Version autour de `V20260611 23H43`. |
 | Theme Mercure | Ajout puis correction d'un theme chrome/acier/mercure plus proche de la maquette. | Fait | Moyenne | Version finale documentee : `V20260612 00H12`. |
+| Coherence liste joueurs par theme | Les themes Teal et Mercure conservent la liste verticale des joueurs selectionnes. | Fait | Moyenne | Correction `V20260619 12H31`. |
 | Lisibilite des themes | Renforcement global des bordures, champs, textes secondaires et contrastes, avec attention particuliere aux themes sombres. | Fait | Haute | Version `V20260618 21H37`. |
 | Carte Application des reglages | La page Reglages presente la version et le support hors ligne dans une carte dediee au lieu du bandeau de titre. | Fait | Moyenne | Version `V20260618 23H39`. |
 | README comme carnet officiel | Le README doit etre mis a jour a chaque evolution. | Fait | Haute | Ajoute le 2026-06-18. |
@@ -1193,7 +1205,7 @@ Ce tableau est le suivi officiel des sujets lies a l'usage, aux parcours joueur,
 | Blocage si informations manquantes | Le bouton de demarrage reste desactive tant qu'il manque un jeu ou un joueur. | Fait | Haute | Verrou comportemental existant. |
 | Blocage si partie active | On ne peut pas demarrer une nouvelle partie tant qu'une partie est en cours. | Fait | Haute | Evite d'ecraser `current`. |
 | Selection des joueurs | Selection via modale, avec filtres par groupe. | Fait | Haute | Groupes : famille, amis, travail. |
-| Reordonner les joueurs | Les joueurs selectionnes peuvent etre reordonnes avec des boutons monter/descendre. | Fait | Haute | Plus fiable sur mobile, version `V20260618 23H59`. |
+| Reordonner les joueurs | Les joueurs selectionnes peuvent etre reordonnes avec des boutons monter/descendre et restent en liste verticale. | Fait | Haute | Plus fiable sur mobile, correction theme `V20260619 12H31`. |
 | Saisie des scores | Saisie via pave numerique tactile. | Fait | Haute | `showNumpad(player)`. |
 | Scores negatifs | Le bouton `±` permet de saisir un score negatif. | Fait | Haute | Couvert par test. |
 | Modification d'un score existant | Cliquer un joueur deja saisi permet de modifier son score. | Fait | Haute | Evite les doublons de manche. |
