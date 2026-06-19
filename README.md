@@ -7,7 +7,7 @@ Ce fichier sert deux objectifs :
 - aider Christophe a se rappeler comment fonctionne l'application ;
 - donner a Codex, ou a tout autre intervenant, le contexte necessaire pour reprendre le projet sans repartir de zero.
 
-Derniere version documentee : `V20260619 14H30`.
+Derniere version documentee : `V20260619 15H08`.
 
 Derniere mise a jour du README : 2026-06-18.
 
@@ -335,7 +335,7 @@ Cette logique evite les doublons pour une meme manche.
 L'application utilise une constante :
 
 ```js
-const APP_VERSION = 'V20260619 14H30';
+const APP_VERSION = 'V20260619 15H08';
 ```
 
 Elle est presente dans :
@@ -357,7 +357,7 @@ const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
 Le test `tests/service-worker.unit.test.js` contient aussi le nom attendu du cache :
 
 ```js
-const currentCacheName = "scorekeeper-V20260619 14H30";
+const currentCacheName = "scorekeeper-V20260619 15H08";
 ```
 
 Quand on change `APP_VERSION`, il faut donc mettre a jour :
@@ -549,7 +549,7 @@ Cette fonction :
 - met a jour la couleur du navigateur ;
 - adapte les champs de formulaire visibles.
 
-Themes disponibles dans la version `V20260619 14H30` :
+Themes disponibles dans la version `V20260619 15H08` :
 
 1. `material` - Material
 2. `teal` - Teal
@@ -773,7 +773,7 @@ viewport: { width: 390, height: 844 }
 
 ## Etat Des Tests
 
-Lors de la derniere validation de la version `V20260619 14H30` :
+Lors de la derniere validation de la version `V20260619 15H08` :
 
 - 17 tests Playwright reussis ;
 - 7 tests service worker reussis ;
@@ -857,7 +857,7 @@ VYYYYMMDD HHHH
 Exemple :
 
 ```text
-V20260619 14H30
+V20260619 15H08
 ```
 
 ### Toujours Lancer Les Tests
@@ -984,7 +984,7 @@ Elle a ensuite ete corrigee pour correspondre davantage a la proposition :
 La derniere version validee est :
 
 ```text
-V20260619 14H30
+V20260619 15H08
 ```
 
 Avec :
@@ -1056,6 +1056,16 @@ Le flux de creation de partie a ete ajuste :
 - une partie terminee peut etre supprimee directement depuis la liste d'historique.
 
 Cette evolution conserve la compatibilite avec les anciens exports qui n'ont pas encore de libelle de partie.
+
+### 15. Groupe Vacances
+
+Le groupe de joueurs `Vacances` a ete ajoute a la liste des groupes disponibles.
+
+Il apparait dans :
+
+- la selection des joueurs ;
+- l'ajout et l'edition de joueurs ;
+- les filtres par groupe.
 
 ## Points Connus Et Limites
 
@@ -1176,7 +1186,7 @@ Ce tableau est le suivi officiel des sujets techniques, d'architecture, de quali
 | Depot GitHub complet hors `node_modules` | Pour garder le README coherent et conserver les tests, versionner tout le dossier sauf `node_modules`. | Fait | Moyenne | Structure recommandee : `index.html`, `sw.js`, `README.md`, `package*.json`, `playwright.config.js`, `scripts/`, `tests/`, `.gitignore`. |
 | Tests Playwright de caracterisation | Ajout de tests navigateur pour verrouiller les parcours principaux. | Fait | Haute | 17 tests Playwright dans `tests/scorekeeper.spec.js`. |
 | Tests unitaires service worker | Ajout de tests dedies au cache et au comportement hors ligne. | Fait | Haute | 7 tests dans `tests/service-worker.unit.test.js`. |
-| Total de tests | Suite actuelle composee de tests fonctionnels et service worker. | Fait | Haute | 24 tests valides sur `V20260619 14H30`. |
+| Total de tests | Suite actuelle composee de tests fonctionnels et service worker. | Fait | Haute | 24 tests valides sur `V20260619 15H08`. |
 | Serveur local de test | Ajout d'un serveur Node local pour tester l'application sans cache parasite. | Fait | Moyenne | `scripts/serve.mjs`, port `4173`. |
 | Configuration Playwright | Tests en viewport mobile Chrome, service workers bloques dans les tests UI. | Fait | Moyenne | `playwright.config.js`, viewport 390 x 844. |
 | Mise a jour atomique du stockage | Les changements passent par `upd(fn)` et ne remplacent l'etat en memoire que si `localStorage` accepte l'ecriture. | Fait | Haute | Evite les pertes d'etat en cas d'erreur de stockage. |
@@ -1187,7 +1197,7 @@ Ce tableau est le suivi officiel des sujets techniques, d'architecture, de quali
 | Suppression des dependances externes runtime | La livraison ne doit pas dependre de scripts, CSS, CDN ou polices externes. | Fait | Haute | Test dedie : aucun script externe, aucun lien CSS externe. |
 | Service worker autonome | Cache de `./`, `index.html` et `sw.js`, navigation network-first puis fallback cache. | Fait | Haute | `sw.js`, cache prefixe `scorekeeper-`. |
 | Nettoyage des anciens caches | A l'activation, les anciens caches ScoreKeeper sont supprimes. | Fait | Haute | Evite les conflits entre versions. |
-| Version forcee dans les deux fichiers | `APP_VERSION` existe dans `index.html` et `sw.js` pour forcer les mises a jour. | Fait | Haute | Derniere version : `V20260619 14H30`. |
+| Version forcee dans les deux fichiers | `APP_VERSION` existe dans `index.html` et `sw.js` pour forcer les mises a jour. | Fait | Haute | Derniere version : `V20260619 15H08`. |
 | Mise a jour du cache attendu en test | Quand `APP_VERSION` change, `currentCacheName` doit changer aussi dans le test service worker. | Fait | Haute | Regle documentee dans le README. |
 | Activation guidee du service worker | Une nouvelle version installee attend le clic utilisateur, puis l'app envoie `SKIP_WAITING` et recharge apres `controllerchange`. | Fait | Haute | Version `V20260618 23H59`. |
 | Manifest PWA dynamique | Le manifest est genere dans `index.html` sous forme de Blob. | Fait | Moyenne | Pas de fichier `manifest.json` separe. |
@@ -1219,7 +1229,7 @@ Ce tableau est le suivi officiel des sujets lies a l'usage, aux parcours joueur,
 | Blocage si informations manquantes | Le demarrage est bloque tant qu'il manque le nom de partie, le jeu ou les joueurs. | Fait | Haute | Validation explicite `V20260619 14H30`. |
 | Message si demarrage impossible | Le bouton de demarrage affiche les champs manquants : nom de partie, jeu ou joueur. | Fait | Haute | Version `V20260619 14H30`. |
 | Blocage si partie active | On ne peut pas demarrer une nouvelle partie tant qu'une partie est en cours. | Fait | Haute | Evite d'ecraser `current`. |
-| Selection des joueurs | Selection via modale, avec filtres par groupe. | Fait | Haute | Groupes : famille, amis, travail. |
+| Selection des joueurs | Selection via modale, avec filtres par groupe. | Fait | Haute | Groupes : famille, amis, travail, vacances. |
 | Reordonner les joueurs | Les joueurs selectionnes peuvent etre reordonnes avec des boutons monter/descendre et restent en liste verticale. | Fait | Haute | Plus fiable sur mobile, correction theme `V20260619 12H31`. |
 | Saisie des scores | Saisie via pave numerique tactile. | Fait | Haute | `showNumpad(player)`. |
 | Scores negatifs | Le bouton `±` permet de saisir un score negatif. | Fait | Haute | Couvert par test. |
@@ -1235,7 +1245,7 @@ Ce tableau est le suivi officiel des sujets lies a l'usage, aux parcours joueur,
 | Statistiques | Statistiques par joueur et par jeu depuis l'historique. | Fait | Moyenne | Pages `stats`. |
 | Gestion des joueurs | Ajouter, modifier, supprimer des joueurs depuis Reglages. | Fait | Haute | Ajout et edition couverts par tests. |
 | Gestion des jeux | Ajouter des jeux personnalises. | Fait | Moyenne | Couvert par test de persistance. |
-| Groupes de joueurs | Associer des joueurs a Famille, Amis, Travail. | Fait | Moyenne | Utilise pour filtrer la selection. |
+| Groupes de joueurs | Associer des joueurs a Famille, Amis, Travail, Vacances. | Fait | Moyenne | Groupe Vacances ajoute en `V20260619 15H08`. |
 | Export QR Code | Export des donnees via QR Code quand la taille le permet. | Fait | Moyenne | QR integre localement. |
 | Export texte | Export alternatif sous forme de code texte `SK1:...`. | Fait | Moyenne | Utile si QR trop volumineux. |
 | Import de donnees | Importer un export valide et remplacer les donnees actuelles. | Fait | Haute | Avec validation et sauvegarde prealable. |
