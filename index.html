@@ -1078,7 +1078,7 @@ h1{font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(--text)}
 <script>
 
 // ── VERSION ─────────────────────────────────────────────────
-const APP_VERSION = 'V20260619 15H08';
+const APP_VERSION = 'V20260619 17H33';
 
 // ── THEMES ─────────────────────────────────────────────────
 const THEMES = [
@@ -1458,6 +1458,7 @@ function renderPage(id){
 // ── HOME ──────────────────────────────────────────────────
 function buildHome(pg){
   let selGame="", selPlayers=[];
+  const creationLocked=Boolean(D.current);
   const wrap=div("inner home-shell");
   pg.appendChild(wrap);
 
@@ -1485,9 +1486,16 @@ function buildHome(pg){
   // Session label card
   const lc=div("card fu home-field-card");
   const lfg=div("fg");
-  lfg.innerHTML=`<label class="lbl">Nom de la partie</label><input type="text" class="inp" id="session-label-inp" placeholder="Ex. Capfun Cenic" autocomplete="off"/>`;
+  lfg.innerHTML=`<label class="lbl">Nom de la partie</label><input type="text" class="inp" id="session-label-inp" placeholder="Ex. Soirée BBQ at home" autocomplete="off"/>`;
   lc.appendChild(lfg);
   wrap.appendChild(lc);
+  const labelInput=document.getElementById("session-label-inp");
+  if(creationLocked&&labelInput){
+    labelInput.disabled=true;
+    labelInput.placeholder="Terminez la partie en cours d'abord";
+    labelInput.style.opacity="0.55";
+    labelInput.style.cursor="not-allowed";
+  }
 
   // Game card
   const gc=div("card fu home-field-card");
@@ -1502,6 +1510,7 @@ function buildHome(pg){
   const pc=div("card fu home-players-card");
   const ph=div("",`<div class="home-players-head"><div class="ctitle">Joueurs</div></div>`);
   const padd=btn("btn btn-s btn-sm","+ Ajouter",()=>{
+    if(creationLocked)return;
     showModal((sheet,close)=>{
       sheet.appendChild(div("mtitle","Sélectionner les joueurs"));
 
@@ -1595,6 +1604,11 @@ function buildHome(pg){
       sheet.appendChild(btn("btn btn-p btn-full","Confirmer",close));
     });
   });
+  if(creationLocked){
+    padd.disabled=true;
+    padd.style.opacity="0.55";
+    padd.style.cursor="not-allowed";
+  }
   ph.firstChild.appendChild(padd);
   pc.appendChild(ph);
   const plist=div("",`<div id="player-list" class="home-player-list"><div style="grid-column:1/-1;padding:16px 0;text-align:center;color:var(--muted);font-size:14px">Aucun joueur sélectionné</div></div>`);
@@ -1635,7 +1649,13 @@ function buildHome(pg){
   wrap.appendChild(sb);
 
   // Game picker
-  document.getElementById("game-sel").onclick=()=>{
+  const gamePicker=document.getElementById("game-sel");
+  if(creationLocked&&gamePicker){
+    gamePicker.textContent="Terminez la partie en cours d'abord";
+    gamePicker.style.opacity="0.55";
+    gamePicker.style.cursor="not-allowed";
+  }
+  if(!creationLocked&&gamePicker)gamePicker.onclick=()=>{
     showModal((sheet,close)=>{
       sheet.appendChild(div("mtitle","Choisir un jeu"));
       const si=el("input","inp","",{type:"text",placeholder:"Rechercher…"});
@@ -2232,12 +2252,16 @@ function showEditScore(player,round,existingVal,onDone){
 
 // ── HISTORY ──────────────────────────────────────────────────
 let histDetail=null;
+let historyOpenGames={};
 function buildHistory(pg){
   pg.innerHTML="";
   const wrap=div("inner");
   pg.appendChild(wrap);
   if(histDetail){buildHistDetail(wrap,histDetail,()=>{histDetail=null;buildHistory(pg)});return;}
-  const sessions=[...D.sessions].reverse();
+  const sessions=[...D.sessions].sort((a,b)=>
+    String(b.date||"").localeCompare(String(a.date||"")) ||
+    (Number(b.finishedAt||b.startedAt||0)-Number(a.finishedAt||a.startedAt||0))
+  );
   const hdr=div("hdr");
   hdr.innerHTML=`<div><h1>Historique</h1><div class="sub">${D.sessions.length} partie${D.sessions.length>1?"s":""}</div></div>`;
   wrap.appendChild(hdr);
@@ -2260,10 +2284,23 @@ function buildHistory(pg){
     }
     const grouped={};
     filtered.forEach(s=>{if(!grouped[s.gameName])grouped[s.gameName]=[];grouped[s.gameName].push(s);});
-    Object.entries(grouped).forEach(([game,sess])=>{
-      const gh=div("",`<div style="display:flex;align-items:center;gap:9px;margin-bottom:9px"><div class="slbl" style="margin:0">${esc(game)}</div><div class="badge bb">${sess.length} partie${sess.length>1?"s":""}</div></div>`);
-      listWrap.appendChild(gh);
-      sess.forEach(s=>{
+    Object.entries(grouped).sort(([a],[b])=>a.localeCompare(b,"fr")).forEach(([game,sess])=>{
+      const isOpen=q?true:historyOpenGames[game]!==false;
+      const group=div("");
+      const gh=el("button","", "", {type:"button","aria-expanded":String(isOpen)});
+      gh.style.cssText="width:100%;display:flex;align-items:center;gap:9px;margin:0 0 9px;padding:8px 10px;border:1.5px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);box-shadow:var(--shadow);cursor:pointer;font:inherit;text-align:left";
+      gh.innerHTML=`<span style="width:18px;color:var(--accent);font-weight:800">${isOpen?"▾":"▸"}</span><div class="slbl" style="margin:0;flex:1">${esc(game)}</div><div class="badge bb">${sess.length} partie${sess.length>1?"s":""}</div>`;
+      gh.onclick=()=>{
+        historyOpenGames[game]=!isOpen;
+        renderList(si.value);
+      };
+      group.appendChild(gh);
+      listWrap.appendChild(group);
+      if(!isOpen)return;
+      sess.sort((a,b)=>
+        String(b.date||"").localeCompare(String(a.date||"")) ||
+        (Number(b.finishedAt||b.startedAt||0)-Number(a.finishedAt||a.startedAt||0))
+      ).forEach(s=>{
         const winner=[...s.players].sort((a,b)=>b.total-a.total)[0];
         const card=div("hist");
         card.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between">
@@ -2299,7 +2336,7 @@ function buildHistory(pg){
           }
         };
         card.onclick=()=>{histDetail=s;pg.innerHTML="";buildHistory(pg)};
-        listWrap.appendChild(card);
+        group.appendChild(card);
       });
     });
   }
