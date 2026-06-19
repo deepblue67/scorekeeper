@@ -7,7 +7,7 @@ Ce fichier sert deux objectifs :
 - aider Christophe a se rappeler comment fonctionne l'application ;
 - donner a Codex, ou a tout autre intervenant, le contexte necessaire pour reprendre le projet sans repartir de zero.
 
-Derniere version documentee : `V20260619 12H31`.
+Derniere version documentee : `V20260619 14H30`.
 
 Derniere mise a jour du README : 2026-06-18.
 
@@ -55,7 +55,7 @@ Elle permet de :
 
 - creer une partie ;
 - choisir un jeu ;
-- choisir une date ;
+- nommer une partie ;
 - selectionner des joueurs ;
 - saisir les scores manche par manche ;
 - modifier ou supprimer un score deja saisi ;
@@ -335,7 +335,7 @@ Cette logique evite les doublons pour une meme manche.
 L'application utilise une constante :
 
 ```js
-const APP_VERSION = 'V20260619 12H31';
+const APP_VERSION = 'V20260619 14H30';
 ```
 
 Elle est presente dans :
@@ -357,7 +357,7 @@ const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
 Le test `tests/service-worker.unit.test.js` contient aussi le nom attendu du cache :
 
 ```js
-const currentCacheName = "scorekeeper-V20260619 12H31";
+const currentCacheName = "scorekeeper-V20260619 14H30";
 ```
 
 Quand on change `APP_VERSION`, il faut donc mettre a jour :
@@ -404,7 +404,7 @@ buildHome(pg)
 L'accueil permet de :
 
 - choisir un jeu ;
-- choisir une date ;
+- nommer la partie ;
 - selectionner les joueurs ;
 - reordonner les joueurs avec les boutons monter/descendre ;
 - demarrer une partie.
@@ -475,7 +475,8 @@ L'historique affiche les parties terminees.
 Chaque entree contient :
 
 - le jeu ;
-- la date ;
+- le libelle de partie ;
+- la date automatique ;
 - le nombre de joueurs ;
 - le gagnant ;
 - le score du gagnant.
@@ -546,9 +547,9 @@ Cette fonction :
 - applique `data-theme` sur `document.documentElement` ;
 - met a jour les variables CSS ;
 - met a jour la couleur du navigateur ;
-- adapte les inputs de date.
+- adapte les champs de formulaire visibles.
 
-Themes disponibles dans la version `V20260619 12H31` :
+Themes disponibles dans la version `V20260619 14H30` :
 
 1. `material` - Material
 2. `teal` - Teal
@@ -772,11 +773,11 @@ viewport: { width: 390, height: 844 }
 
 ## Etat Des Tests
 
-Lors de la derniere validation de la version `V20260619 12H31` :
+Lors de la derniere validation de la version `V20260619 14H30` :
 
-- 15 tests Playwright reussis ;
+- 17 tests Playwright reussis ;
 - 7 tests service worker reussis ;
-- total : 22 tests reussis.
+- total : 24 tests reussis.
 
 Commandes utilisees :
 
@@ -856,7 +857,7 @@ VYYYYMMDD HHHH
 Exemple :
 
 ```text
-V20260619 12H31
+V20260619 14H30
 ```
 
 ### Toujours Lancer Les Tests
@@ -983,13 +984,13 @@ Elle a ensuite ete corrigee pour correspondre davantage a la proposition :
 La derniere version validee est :
 
 ```text
-V20260619 12H31
+V20260619 14H30
 ```
 
 Avec :
 
 - 13 themes disponibles ;
-- 22 tests reussis ;
+- 24 tests reussis ;
 - aucun script externe ;
 - aucun lien CSS externe ;
 - fonctionnement hors ligne conserve.
@@ -1042,6 +1043,19 @@ Correction visuelle apres retour sur le theme Teal :
 - l'ordre de demarrage de la partie reste identique a l'ordre affiche.
 
 Cette correction ne change pas le stockage, les donnees ni le fonctionnement hors ligne.
+
+### 14. Libelle De Partie Et Gestion Historique
+
+Le flux de creation de partie a ete ajuste :
+
+- la date n'est plus saisie manuellement ;
+- la date du jour est affectee automatiquement au demarrage de la partie ;
+- un champ `Nom de la partie` apparait avant le choix du jeu ;
+- ce libelle est affiche dans l'historique avec le jeu et la date ;
+- le bouton de demarrage explique les champs manquants au lieu de rester silencieux ;
+- une partie terminee peut etre supprimee directement depuis la liste d'historique.
+
+Cette evolution conserve la compatibilite avec les anciens exports qui n'ont pas encore de libelle de partie.
 
 ## Points Connus Et Limites
 
@@ -1103,7 +1117,7 @@ Avant de livrer :
 - [ ] incrementer `APP_VERSION` dans `sw.js` ;
 - [ ] mettre a jour `currentCacheName` dans `tests/service-worker.unit.test.js` ;
 - [ ] lancer les 7 tests service worker ;
-- [ ] lancer les 15 tests Playwright ;
+- [ ] lancer les 17 tests Playwright ;
 - [ ] verifier qu'il n'y a pas de dependance externe ;
 - [ ] verifier visuellement les ecrans touches ;
 - [ ] deployer uniquement `index.html` et `sw.js`.
@@ -1160,9 +1174,9 @@ Ce tableau est le suivi officiel des sujets techniques, d'architecture, de quali
 | Ne pas modifier les originaux | Les fichiers originaux dans `Downloads` ne doivent pas etre modifies directement. La livraison travaillee est dans `outputs/scorekeeper`. | Fait | Haute | Regle de travail conservee. |
 | Fichiers de production minimaux | L'application deployee a besoin uniquement de `index.html` et `sw.js`. | Fait | Haute | README recommande aussi de versionner les tests/outils sur GitHub. |
 | Depot GitHub complet hors `node_modules` | Pour garder le README coherent et conserver les tests, versionner tout le dossier sauf `node_modules`. | Fait | Moyenne | Structure recommandee : `index.html`, `sw.js`, `README.md`, `package*.json`, `playwright.config.js`, `scripts/`, `tests/`, `.gitignore`. |
-| Tests Playwright de caracterisation | Ajout de tests navigateur pour verrouiller les parcours principaux. | Fait | Haute | 15 tests Playwright dans `tests/scorekeeper.spec.js`. |
+| Tests Playwright de caracterisation | Ajout de tests navigateur pour verrouiller les parcours principaux. | Fait | Haute | 17 tests Playwright dans `tests/scorekeeper.spec.js`. |
 | Tests unitaires service worker | Ajout de tests dedies au cache et au comportement hors ligne. | Fait | Haute | 7 tests dans `tests/service-worker.unit.test.js`. |
-| Total de tests | Suite actuelle composee de tests fonctionnels et service worker. | Fait | Haute | 22 tests valides sur `V20260619 12H31`. |
+| Total de tests | Suite actuelle composee de tests fonctionnels et service worker. | Fait | Haute | 24 tests valides sur `V20260619 14H30`. |
 | Serveur local de test | Ajout d'un serveur Node local pour tester l'application sans cache parasite. | Fait | Moyenne | `scripts/serve.mjs`, port `4173`. |
 | Configuration Playwright | Tests en viewport mobile Chrome, service workers bloques dans les tests UI. | Fait | Moyenne | `playwright.config.js`, viewport 390 x 844. |
 | Mise a jour atomique du stockage | Les changements passent par `upd(fn)` et ne remplacent l'etat en memoire que si `localStorage` accepte l'ecriture. | Fait | Haute | Evite les pertes d'etat en cas d'erreur de stockage. |
@@ -1173,7 +1187,7 @@ Ce tableau est le suivi officiel des sujets techniques, d'architecture, de quali
 | Suppression des dependances externes runtime | La livraison ne doit pas dependre de scripts, CSS, CDN ou polices externes. | Fait | Haute | Test dedie : aucun script externe, aucun lien CSS externe. |
 | Service worker autonome | Cache de `./`, `index.html` et `sw.js`, navigation network-first puis fallback cache. | Fait | Haute | `sw.js`, cache prefixe `scorekeeper-`. |
 | Nettoyage des anciens caches | A l'activation, les anciens caches ScoreKeeper sont supprimes. | Fait | Haute | Evite les conflits entre versions. |
-| Version forcee dans les deux fichiers | `APP_VERSION` existe dans `index.html` et `sw.js` pour forcer les mises a jour. | Fait | Haute | Derniere version : `V20260619 12H31`. |
+| Version forcee dans les deux fichiers | `APP_VERSION` existe dans `index.html` et `sw.js` pour forcer les mises a jour. | Fait | Haute | Derniere version : `V20260619 14H30`. |
 | Mise a jour du cache attendu en test | Quand `APP_VERSION` change, `currentCacheName` doit changer aussi dans le test service worker. | Fait | Haute | Regle documentee dans le README. |
 | Activation guidee du service worker | Une nouvelle version installee attend le clic utilisateur, puis l'app envoie `SKIP_WAITING` et recharge apres `controllerchange`. | Fait | Haute | Version `V20260618 23H59`. |
 | Manifest PWA dynamique | Le manifest est genere dans `index.html` sous forme de Blob. | Fait | Moyenne | Pas de fichier `manifest.json` separe. |
@@ -1201,8 +1215,9 @@ Ce tableau est le suivi officiel des sujets lies a l'usage, aux parcours joueur,
 
 | Sujet | Description | Statut | Priorite | Version / remarque |
 |---|---|---:|---:|---|
-| Creation d'une partie | Choisir un jeu, une date et des joueurs, puis demarrer une partie. | Fait | Haute | Fonction principale de l'application. |
-| Blocage si informations manquantes | Le bouton de demarrage reste desactive tant qu'il manque un jeu ou un joueur. | Fait | Haute | Verrou comportemental existant. |
+| Creation d'une partie | Nommer la partie, choisir un jeu et des joueurs, puis demarrer. La date est automatique. | Fait | Haute | Libelle de partie ajoute en `V20260619 14H30`. |
+| Blocage si informations manquantes | Le demarrage est bloque tant qu'il manque le nom de partie, le jeu ou les joueurs. | Fait | Haute | Validation explicite `V20260619 14H30`. |
+| Message si demarrage impossible | Le bouton de demarrage affiche les champs manquants : nom de partie, jeu ou joueur. | Fait | Haute | Version `V20260619 14H30`. |
 | Blocage si partie active | On ne peut pas demarrer une nouvelle partie tant qu'une partie est en cours. | Fait | Haute | Evite d'ecraser `current`. |
 | Selection des joueurs | Selection via modale, avec filtres par groupe. | Fait | Haute | Groupes : famille, amis, travail. |
 | Reordonner les joueurs | Les joueurs selectionnes peuvent etre reordonnes avec des boutons monter/descendre et restent en liste verticale. | Fait | Haute | Plus fiable sur mobile, correction theme `V20260619 12H31`. |
@@ -1215,7 +1230,8 @@ Ce tableau est le suivi officiel des sujets lies a l'usage, aux parcours joueur,
 | Navigation de manches | Aller a la manche precedente ou suivante. | Fait | Haute | Boutons de navigation autour de la manche courante. |
 | Indicateur de progression de manche | Affiche combien de joueurs ont saisi leur score pour la manche. | Fait | Moyenne | Exemple : `0/2 ont saisi`. |
 | Fin de partie | Terminer une partie et l'envoyer dans l'historique. | Fait | Haute | Confirmation avec gagnant. |
-| Historique persistant | Les parties terminees restent visibles apres rechargement. | Fait | Haute | Couvert par test. |
+| Historique persistant | Les parties terminees restent visibles apres rechargement, avec libelle, jeu et date. | Fait | Haute | Couvert par test. |
+| Suppression d'une partie historique | Une partie terminee peut etre supprimee depuis la liste d'historique ou depuis son detail. | Fait | Haute | Version `V20260619 14H30`, couvert par test. |
 | Statistiques | Statistiques par joueur et par jeu depuis l'historique. | Fait | Moyenne | Pages `stats`. |
 | Gestion des joueurs | Ajouter, modifier, supprimer des joueurs depuis Reglages. | Fait | Haute | Ajout et edition couverts par tests. |
 | Gestion des jeux | Ajouter des jeux personnalises. | Fait | Moyenne | Couvert par test de persistance. |
@@ -1233,7 +1249,7 @@ Ce tableau est le suivi officiel des sujets lies a l'usage, aux parcours joueur,
 | Ordre des reglages | Les reglages affichent Application, puis Joueurs, puis Apparence avant les autres sections. | Fait | Moyenne | Version `V20260618 23H39`. |
 | Restaurer la sauvegarde d'import | Ajouter un bouton de restauration depuis `sk_v3_backup`. | A faire | Moyenne | Sujet gameplay/securite utile. |
 | Mode export fichier | Exporter/importer via fichier local en plus du QR/texte. | Moyen terme | Moyenne | Pour gros historiques, plus confortable que QR. |
-| Recherche dans l'historique | Ajouter une recherche par jeu, joueur ou date. | Moyen terme | Basse | Utile si beaucoup de parties. |
+| Recherche dans l'historique | Ajouter une recherche plus avancee par joueur ou date. | Moyen terme | Basse | La recherche par libelle/jeu existe deja. |
 | Filtre statistiques avance | Filtrer les stats par periode, jeu ou groupe. | Moyen terme | Basse | A envisager apres usage reel. |
 | Annuler la derniere action | Undo simple apres saisie/modification de score. | Moyen terme | Moyenne | Interessant, mais a concevoir prudemment. |
 | Modeles de regles par jeu | Regles de scoring specifiques selon le jeu. | A eviter pour l'instant | Basse | Risque de complexifier l'application. |

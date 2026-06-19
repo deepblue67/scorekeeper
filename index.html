@@ -1078,7 +1078,7 @@ h1{font-size:28px;font-weight:800;letter-spacing:-.04em;color:var(--text)}
 <script>
 
 // ── VERSION ─────────────────────────────────────────────────
-const APP_VERSION = 'V20260619 12H31';
+const APP_VERSION = 'V20260619 14H30';
 
 // ── THEMES ─────────────────────────────────────────────────
 const THEMES = [
@@ -1287,6 +1287,7 @@ function upd(fn){
 function uid(){return Math.random().toString(36).slice(2)}
 function today(){return new Date().toISOString().split("T")[0]}
 function fmtDate(d){if(!d)return"";const[y,m,day]=d.split("-");return day+"/"+m+"/"+y}
+function sessionTitle(s){return s?.sessionLabel||s?.gameName||""}
 function esc(value){
   return String(value ?? "").replace(/[&<>"']/g,char=>({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
@@ -1314,6 +1315,7 @@ function isValidPlayer(player,withScores){
 function isValidSession(session){
   return isPlainObject(session)&&typeof session.id==="string"&&session.id&&
     typeof session.gameName==="string"&&session.gameName.trim()&&
+    (session.sessionLabel===undefined||typeof session.sessionLabel==="string")&&
     typeof session.date==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(session.date)&&
     Array.isArray(session.players)&&session.players.length>0&&session.players.every(p=>isValidPlayer(p,true))&&
     Number.isInteger(session.round)&&session.round>=1&&
@@ -1454,7 +1456,7 @@ function renderPage(id){
 
 // ── HOME ──────────────────────────────────────────────────
 function buildHome(pg){
-  let selGame="", selDate=today(), selPlayers=[];
+  let selGame="", selPlayers=[];
   const wrap=div("inner home-shell");
   pg.appendChild(wrap);
 
@@ -1479,6 +1481,13 @@ function buildHome(pg){
     wrap.appendChild(ban);
   }
 
+  // Session label card
+  const lc=div("card fu home-field-card");
+  const lfg=div("fg");
+  lfg.innerHTML=`<label class="lbl">Nom de la partie</label><input type="text" class="inp" id="session-label-inp" placeholder="Ex. Capfun Cenic" autocomplete="off"/>`;
+  lc.appendChild(lfg);
+  wrap.appendChild(lc);
+
   // Game card
   const gc=div("card fu home-field-card");
   const gfg=div("fg");
@@ -1487,23 +1496,6 @@ function buildHome(pg){
   gfg.appendChild(glbl);gfg.appendChild(gpick);
   gc.appendChild(gfg);
   wrap.appendChild(gc);
-
-  const dc=div("card fu home-field-card");
-  const dfg=div("fg");
-  dfg.innerHTML=`<label class="lbl">Date</label><input type="date" class="inp" id="date-inp" value="${selDate}" style="color-scheme:light"/>`;
-  // Apply current theme to date input
-  setTimeout(()=>{
-    const di=document.getElementById("date-inp");
-    if(di){
-      const t=THEMES.find(x=>x.id===currentTheme)||THEMES[0];
-      const isDark=t.id==="night"||t.id==="minuit"||t.id==="myrtille";
-      di.style.colorScheme=isDark?"dark":"light";
-      di.style.background=t.surface2;
-      di.style.color=t.text;
-    }
-  },0);
-  dc.appendChild(dfg);
-  wrap.appendChild(dc);
 
   // Players card
   const pc=div("card fu home-players-card");
@@ -1611,9 +1603,23 @@ function buildHome(pg){
   // Start btn
   const sb=btn("btn btn-p btn-full fu home-start","▷ Démarrer la partie",()=>{
     const gn=selGame||document.getElementById("game-sel").dataset.val||"";
-    const dt=document.getElementById("date-inp").value;
-    if(!gn||!selPlayers.length)return;
-    const session={id:uid(),gameName:gn,date:dt,startedAt:Date.now(),players:selPlayers.map(p=>({...p,scores:[],total:0})),round:1};
+    const sessionLabel=(document.getElementById("session-label-inp")?.value||"").trim();
+    const missing=[];
+    if(!sessionLabel)missing.push("donner un nom \u00e0 la partie");
+    if(!gn)missing.push("choisir un jeu");
+    if(!selPlayers.length)missing.push("ajouter au moins un joueur");
+    if(missing.length){
+      showModal((sheet,close)=>{
+        sheet.appendChild(div("mtitle","Impossible de d\u00e9marrer"));
+        const msg=div("");
+        msg.style.cssText="color:var(--muted);font-size:14px;line-height:1.55;margin-bottom:16px";
+        msg.innerHTML=`Il manque :<ul style="margin:8px 0 0 18px;padding:0">${missing.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+        sheet.appendChild(msg);
+        sheet.appendChild(btn("btn btn-p btn-full","Compris",close));
+      });
+      return;
+    }
+    const session={id:uid(),sessionLabel,gameName:gn,date:today(),startedAt:Date.now(),players:selPlayers.map(p=>({...p,scores:[],total:0})),round:1};
     upd(d=>({...d,current:session}));
     goTab("game");
   });
@@ -1623,7 +1629,7 @@ function buildHome(pg){
     sb.style.opacity="0.4";
     sb.textContent="⚠️ Terminez la partie en cours d'abord";
   } else {
-    sb.disabled=true; // will be enabled by updateBtn
+    sb.disabled=false;
   }
   wrap.appendChild(sb);
 
@@ -1874,8 +1880,7 @@ function buildHome(pg){
 
   function updateBtn(){
     if(D.current)return; // already blocked above
-    const gn=selGame||"";
-    sb.disabled=!gn||!selPlayers.length;
+    sb.disabled=false;
   }
 }
 
@@ -1928,6 +1933,7 @@ function buildGame(pg){
   const hdr=div("hdr");
   const hl=div("");
   hl.innerHTML=`<h1>${esc(s.gameName)}</h1><div class="sub">${esc(fmtDate(s.date))} · ${s.players.length} joueurs</div>`;
+  hl.innerHTML=`<h1>${esc(sessionTitle(s))}</h1><div class="sub">${esc(s.gameName)} &middot; ${esc(fmtDate(s.date))} &middot; ${s.players.length} joueurs</div>`;
   const rp=div("rpill","\ud83c\udfaf Manche "+s.round);
   hdr.appendChild(hl);hdr.appendChild(rp);
   wrap.appendChild(hdr);
@@ -2244,7 +2250,8 @@ function buildHistory(pg){
 
   function renderList(filter){
     listWrap.innerHTML="";
-    const filtered=sessions.filter(s=>s.gameName.toLowerCase().includes(filter.toLowerCase()));
+    const q=filter.toLowerCase();
+    const filtered=sessions.filter(s=>(sessionTitle(s)+" "+s.gameName).toLowerCase().includes(q));
     if(!filtered.length){
       const em=div("empty");
       em.innerHTML=`<div class="empty-ico">\ud83d\udcdc</div><div style="font-weight:700;font-size:18px">Aucune partie</div><div style="font-size:14px;color:var(--muted)">Les parties terminées apparaîtront ici.</div>`;
@@ -2269,6 +2276,27 @@ function buildHistory(pg){
           <span style="font-weight:700;font-size:14px">${esc(winner.name)}</span>
           <span style="margin-left:auto;font-family:SFMono-Regular,Consolas,Liberation Mono,monospace;color:var(--accent);font-weight:700">${winner.total} pts</span>
         </div>`:""}`;
+        card.innerHTML=`<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <div>
+            <div class="hist-name">${esc(sessionTitle(s))}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:3px">${esc(s.gameName)} &middot; ${esc(fmtDate(s.date))}</div>
+          </div>
+          <button class="btn btn-d btn-sm hist-delete" type="button" aria-label="Supprimer ${esc(sessionTitle(s))}">×</button>
+        </div>
+        <div class="hist-meta">${s.players.length} joueurs &middot; ${Math.max(...s.players.map(p=>p.scores.length),0)} manches</div>
+        ${winner?`<div class="hist-winner">
+          <span style="font-size:13px;color:var(--muted)">Gagnant :</span>
+          <div class="${avClass(winner)}">${esc(winner.emoji)}</div>
+          <span style="font-weight:700;font-size:14px">${esc(winner.name)}</span>
+          <span style="margin-left:auto;font-family:SFMono-Regular,Consolas,Liberation Mono,monospace;color:var(--accent);font-weight:700">${winner.total} pts</span>
+        </div>`:""}`;
+        card.querySelector(".hist-delete").onclick=e=>{
+          e.stopPropagation();
+          if(confirm("Supprimer la partie \""+sessionTitle(s)+"\" ?")){
+            upd(d=>({...d,sessions:d.sessions.filter(x=>x.id!==s.id)}));
+            buildHistory(pg);
+          }
+        };
         card.onclick=()=>{histDetail=s;pg.innerHTML="";buildHistory(pg)};
         listWrap.appendChild(card);
       });
@@ -2306,7 +2334,7 @@ function buildHistDetail(wrap,s,back){
   // Title
   const title=div("");
   title.style.cssText="margin-bottom:18px";
-  title.innerHTML=`<div style="font-size:24px;font-weight:800;letter-spacing:-.02em">${esc(s.gameName)}</div><div style="font-size:13px;color:var(--muted);margin-top:3px">${esc(fmtDate(s.date))} · ${s.players.length} joueurs</div>`;
+  title.innerHTML=`<div style="font-size:24px;font-weight:800;letter-spacing:-.02em">${esc(sessionTitle(s))}</div><div style="font-size:13px;color:var(--muted);margin-top:3px">${esc(s.gameName)} &middot; ${esc(fmtDate(s.date))} &middot; ${s.players.length} joueurs</div>`;
   wrap.appendChild(title);
 
   // Ranking
@@ -2379,9 +2407,9 @@ function shareAsImage(s,sorted){
   // ── HEADER ──
   ctx.fillStyle="#fff";
   ctx.font="bold 30px sans-serif"; ctx.textAlign="left";
-  ctx.fillText("🏆 "+s.gameName, PAD, PAD+36);
+  ctx.fillText("🏆 "+sessionTitle(s), PAD, PAD+36);
   ctx.font="15px sans-serif"; ctx.globalAlpha=0.75;
-  ctx.fillText(fmtDate(s.date)+" · "+s.players.length+" joueurs · "+maxR+" manche"+(maxR>1?"s":""), PAD, PAD+62);
+  ctx.fillText(s.gameName+" · "+fmtDate(s.date)+" · "+s.players.length+" joueurs · "+maxR+" manche"+(maxR>1?"s":""), PAD, PAD+62);
   ctx.globalAlpha=1;
   ctx.fillStyle="rgba(255,255,255,0.3)";
   ctx.fillRect(PAD, HEADER-14, W-PAD*2, 1.5);
@@ -2469,9 +2497,9 @@ function shareAsImage(s,sorted){
   // Export
   canvas.toBlob(blob=>{
     if(!blob)return;
-    const file=new File([blob],"scorekeeper-"+s.gameName+".png",{type:"image/png"});
+    const file=new File([blob],"scorekeeper-"+sessionTitle(s)+".png",{type:"image/png"});
     if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-      navigator.share({title:s.gameName+" — Résultats",files:[file]}).catch(()=>fallbackShare(canvas,s,sorted));
+      navigator.share({title:sessionTitle(s)+" — Résultats",files:[file]}).catch(()=>fallbackShare(canvas,s,sorted));
     } else {
       fallbackShare(canvas,s,sorted);
     }
@@ -2488,7 +2516,7 @@ function fallbackShare(canvas,s,sorted){
     sheet.appendChild(img);
     const dl=document.createElement("a");
     dl.href=canvas.toDataURL("image/png");
-    dl.download="scorekeeper-"+s.gameName+".png";
+    dl.download="scorekeeper-"+sessionTitle(s)+".png";
     dl.className="btn btn-p btn-full";
     dl.style.textDecoration="none";
     dl.textContent="⬇️ Télécharger l'image";
